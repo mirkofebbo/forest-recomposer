@@ -23,61 +23,60 @@ export default function App() {
   }
 
   return (
-    <div style={{ maxWidth: 900, margin: "40px auto", padding: 16 }}>
-      <h1>YouTube Search </h1>
+    <Container maxWidth="sm" sx={{ marginTop: 5 }}>
+      <Typography variant="h4" gutterBottom>YouTube Search</Typography>
 
-      <form onSubmit={onSearch} style={{ display: "flex", gap: 8 }}>
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search videos…"
-          style={{ flex: 1, padding: 10, fontSize: 16 }}
-        />
-        <button disabled={loading || !query.trim()} style={{ padding: "10px 14px" }}>
-          {loading ? "Searching…" : "Search"}
-        </button>
-      </form>
+      <Box component="form" onSubmit={onSearch} sx={{ display: "flex", gap: 1, marginBottom: 2 }}>
+      <input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search videos…"
+        style={{ flex: 1, padding: 10, fontSize: 16 }}
+      />
+      <button disabled={loading || !query.trim()} style={{ padding: "10px 14px" }}>
+        {loading ? "Searching…" : "Search"}
+      </button>
+      </Box>
 
-      {error && <p style={{ color: "crimson" }}>{error}</p>}
+      {error && <Typography sx={{ color: "error.main" }}>{error}</Typography>}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-          gap: 12,
-          marginTop: 16,
-        }}
+      <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+        gap: 1.5,
+        marginTop: 2,
+      }}
       >
-        {items.map((it) => {
-          const vid = it.id.videoId;
-          const thumb = it.snippet.thumbnails?.medium?.url;
-          const href = vid ? `https://www.youtube.com/watch?v=${vid}` : "#";
+      {items.map((it) => {
+        const vid = it.id.videoId;
+        const thumb = it.snippet.thumbnails?.medium?.url;
+        const href = vid ? `https://www.youtube.com/watch?v=${vid}` : "#";
 
-          return (
-            <a
-              key={`${vid}-${it.snippet.publishedAt}`}
-              href={href}
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                textDecoration: "none",
-                color: "inherit",
-                border: "1px solid #ddd",
-                borderRadius: 12,
-                overflow: "hidden",
-              }}
-            >
-              {thumb && <img src={thumb} alt="" style={{ width: "100%", display: "block" }} />}
-              <div style={{ padding: 10 }}>
-                <div style={{ fontWeight: 600, lineHeight: 1.2 }}>{it.snippet.title}</div>
-                <div style={{ opacity: 0.7, marginTop: 6 }}>{it.snippet.channelTitle}</div>
-                <div style={{ opacity: 0.7, marginTop: 6 }}>{it.snippet.publishedAt}</div>
-
-              </div>
-            </a>
-          );
+        return (
+        <Link
+          key={`${vid}-${it.snippet.publishedAt}`}
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          sx={{
+          textDecoration: "none",
+          color: "inherit",
+          border: "1px solid #ddd",
+          borderRadius: 1.5,
+          overflow: "hidden",
+          }}
+        >
+          {thumb && <img src={thumb} alt="" style={{ width: "100%", display: "block" }} />}
+          <Box sx={{ padding: 1.25 }}>
+          <Box sx={{ fontWeight: 600, lineHeight: 1.2 }}>{it.snippet.title}</Box>
+          <Box sx={{ opacity: 0.7, marginTop: 0.75 }}>{it.snippet.channelTitle}</Box>
+          <Box sx={{ opacity: 0.7, marginTop: 0.75 }}>{it.snippet.publishedAt}</Box>
+          </Box>
+        </Link>
+        );
         })}
-      </div>
-    </div>
+      </Box>
+    </Container>
   );
 }
