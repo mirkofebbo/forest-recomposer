@@ -1,21 +1,29 @@
-import React, { useState } from "react";
-import { Container, Typography, Box, Link, Button, Input } from '@mui/material';
+import React from "react";
+import { Box } from "@mui/material";
 
 import EditListWindow from "./components/editListWindow";
 import VideoSearch from "./components/videoSearchWindow";
 import CompletedListWindow from "./components/completedListWindow";
 
 const MODE: string = "DEBUG";
+const LEFT_PANE_WIDTH = "20%"; 
+const CENTER_PANE_WIDTH = "60%";
+const RIGHT_PANE_WIDTH = "20%";
 
 export default function App() {
-
-
   return (
-    <Container>
-      <EditListWindow mode={MODE}/>
-      <Typography variant="h4" gutterBottom>YouTube Search</Typography>
-      <VideoSearch mode={MODE} />
-      <CompletedListWindow mode={MODE}/>
-    </Container>
+    <Box sx={{ display: "flex", flexDirection: "row", height: "100vh", width: "100vw" }}>
+      <Box sx={{ width: LEFT_PANE_WIDTH, height: "100%" }}>
+        <EditListWindow mode={MODE} />
+      </Box>
+
+      <Box sx={{ width: CENTER_PANE_WIDTH, height: "100%" }}>
+        <VideoSearch mode={MODE} />
+      </Box>
+
+      <Box sx={{ width: RIGHT_PANE_WIDTH, height: "100%" }}>
+        <CompletedListWindow mode={MODE} />
+      </Box>
+    </Box>
   );
 }
