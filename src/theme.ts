@@ -1,4 +1,5 @@
-// src/theme.ts
+//theme generated with the help of chatgpt 5.2
+
 import { createTheme } from '@mui/material/styles';
 
 /* ======================================================
