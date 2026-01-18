@@ -71,6 +71,8 @@ export default function App() {
               <div style={{ padding: 10 }}>
                 <div style={{ fontWeight: 600, lineHeight: 1.2 }}>{it.snippet.title}</div>
                 <div style={{ opacity: 0.7, marginTop: 6 }}>{it.snippet.channelTitle}</div>
+                <div style={{ opacity: 0.7, marginTop: 6 }}>{it.snippet.publishedAt}</div>
+
               </div>
             </a>
           );
