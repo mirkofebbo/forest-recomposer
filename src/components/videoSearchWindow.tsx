@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Container, Typography, Box, Link, Button, Input } from '@mui/material';
 import { searchYouTubeVideos, type YouTubeSearchItem } from "./youtubeSearch";
 
-export default function VideoSearch() {
+export default function VideoSearch( {mode}: {mode?: string} ) {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<YouTubeSearchItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -24,7 +24,6 @@ export default function VideoSearch() {
 
   return (
     <Container maxWidth="sm" sx={{ marginTop: 5 }}>
-
       <Box component="form" onSubmit={onSearch} sx={{ display: "flex", gap: 1, marginBottom: 2 }}>
       <Input
         value={query}
