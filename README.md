@@ -71,3 +71,25 @@ export default defineConfig([
   },
 ])
 ```
+# Forest Video Recomposer 
+
+1. Search or paste YouTube URLs 
+2. Save to edit list 
+3. mark interesting moments (time ranges) START - RANGE
+4. tag them (e.g. “GREEN”, “HUMAN”, “WATER”, “ROAD”, "COMMUNITY”) 
+5. Save to save list 
+6. hit “Recompose” .
+
+## UI 
+### Left 
+Add button -> change center window for a search modal
+Edit section, list of youtube clip selected
+
+### Center 
+timecodes editor (start/end, tag, notes)
+or search modal 
+or recomposer modal 
+
+### Right
+Edited videos with timecodes recomposition
+
