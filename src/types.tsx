@@ -11,3 +11,13 @@ export type ForestRestorationDemoSite =
   | "Southern Netherlands"
   | "Vindelälven-Juhttatahkka Biosphere Reserve, Sweden"
   | "Vysočina & North Moravia, Czech Republic";
+
+export type YouTubeSearchItem = {
+  id: { videoId?: string };
+  snippet: {
+    title: string;
+    channelTitle: string;
+    publishedAt: string;
+    thumbnails: { medium?: { url: string } };
+  };
+};

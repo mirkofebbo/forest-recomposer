@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Container, Typography, Box, Link, Button, Input, Slide, IconButton } from '@mui/material';
 import CloseIcon from "@mui/icons-material/Close";
-import { searchYouTubeVideos, type YouTubeSearchItem } from "./youtubeSearch";
+import { searchYouTubeVideos } from "./youtube/youtubeSearch";
+import type { YouTubeSearchItem } from "../types";
 
 export default function VideoSearch({ mode }: { mode?: string }) {
   const [query, setQuery] = useState("");
