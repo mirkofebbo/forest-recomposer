@@ -29,5 +29,6 @@ export async function searchYouTubeVideos(q: string) {
   }
 
   const data = await res.json();
+  console.log("YouTube search data:", data);
   return data.items as YouTubeSearchItem[];
 }
