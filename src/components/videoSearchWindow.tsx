@@ -36,7 +36,10 @@ export default function VideoSearch({ mode, manifestData, setManifestData }: { m
   function addToManifest(video: YouTubeSearchItem) {
     if (!video.id.videoId) return;
     if (!manifestData || !setManifestData) return;
-
+    if (manifestData.to_edit.find((v) => v.videoId === video.id.videoId)) {
+      return; // already in to_edit
+    }
+    
     const newVideoItem = {
       videoId: video.id.videoId,
       title: video.snippet.title,
