@@ -25,6 +25,12 @@ export type Timestamp = {
   note: string;
 };
 
+export type Manifest = {
+  to_edit: Array<VideoItem>;
+  in_progress: Array<VideoItem>;
+  completed: Array<VideoItem>;
+};
+
 export type TagList = 
   | "GREEN"
   | "HUMAN"
