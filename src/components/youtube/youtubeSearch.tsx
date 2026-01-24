@@ -1,12 +1,4 @@
-export type YouTubeSearchItem = {
-  id: { videoId?: string };
-  snippet: {
-    title: string;
-    channelTitle: string;
-    publishedAt: string;
-    thumbnails: { medium?: { url: string } };
-  };
-};
+import type { YouTubeSearchItem } from "../../types";
 
 export async function searchYouTubeVideos(q: string) {
   const key = import.meta.env.VITE_YT_API_KEY as string | undefined;
@@ -29,5 +21,6 @@ export async function searchYouTubeVideos(q: string) {
   }
 
   const data = await res.json();
+  console.log("YouTube search data:", data);
   return data.items as YouTubeSearchItem[];
 }

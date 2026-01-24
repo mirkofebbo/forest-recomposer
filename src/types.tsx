@@ -1,3 +1,45 @@
+export type YouTubeSearchItem = {
+  id: { videoId?: string };
+  snippet: {
+    title: string;
+    channelTitle: string;
+    publishedAt: string;
+    thumbnails: { medium?: { url: string } };
+  };
+};
+
+export type VideoItem = {
+  videoId: string;
+  title: string;
+  channelTitle: string;
+  publishedAt: string;
+  thumbnailUrl: string;
+  clips: Array<Timestamp>;
+};
+
+export type Timestamp = {
+  id: string;
+  start: number;
+  end: number;
+  tags: string[];
+  note: string;
+};
+
+export type Manifest = {
+  to_edit: Array<VideoItem>;
+  in_progress: Array<VideoItem>;
+  completed: Array<VideoItem>;
+};
+
+export type TagList = 
+  | "GREEN"
+  | "HUMAN"
+  | "WATER"
+  | "ANIMAL"
+  | "SUNLIGHT"
+  | "SOIL"
+  | "OTHER";
+
 export type ForestRestorationDemoSite =
   | "Aquitaine, France"
   | "Castile and León, Spain"
@@ -11,3 +53,4 @@ export type ForestRestorationDemoSite =
   | "Southern Netherlands"
   | "Vindelälven-Juhttatahkka Biosphere Reserve, Sweden"
   | "Vysočina & North Moravia, Czech Republic";
+

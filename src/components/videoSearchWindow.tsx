@@ -1,12 +1,16 @@
 import React, { useState } from "react";
-import { Container, Typography, Box, Link, Button, Input } from '@mui/material';
-import { searchYouTubeVideos, type YouTubeSearchItem } from "./youtubeSearch";
+import { Container, Typography, Box, Link, Button, Input, Slide, IconButton } from '@mui/material';
+import CloseIcon from "@mui/icons-material/Close";
+import { searchYouTubeVideos } from "./youtube/youtubeSearch";
+import type { Manifest, YouTubeSearchItem } from "../types";
 
-export default function VideoSearch({ mode }: { mode?: string }) {
+export default function VideoSearch({ mode, manifestData, setManifestData }: { mode?: string, manifestData?: Manifest, setManifestData?: React.Dispatch<React.SetStateAction<Manifest>> }) {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<YouTubeSearchItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
+
+  const open = loading || items.length > 0 || error !== "";
 
   async function onSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -22,59 +26,142 @@ export default function VideoSearch({ mode }: { mode?: string }) {
     }
   }
 
+  function closeResults() {
+    setItems([]);
+    setError("");
+    setLoading(false);
+    setQuery("");
+  }
+
+  function addToManifest(video: YouTubeSearchItem) {
+    if (!video.id.videoId) return;
+    if (!manifestData || !setManifestData) return;
+
+    const newVideoItem = {
+      videoId: video.id.videoId,
+      title: video.snippet.title,
+      channelTitle: video.snippet.channelTitle,
+      publishedAt: video.snippet.publishedAt,
+      thumbnailUrl: video.snippet.thumbnails?.medium?.url || "",
+      clips: [],
+    };
+
+    setManifestData({
+      ...manifestData,
+      to_edit: [...manifestData.to_edit, newVideoItem],
+    });
+  }
   return (
-    <Container sx={[mode === "DEBUG" && { border: '1px solid green', borderRadius: 2 }, { height: "100%" }]}>
-      <Box component="form" onSubmit={onSearch} sx={{ display: "flex", gap: 1, marginTop: 2 }}>
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search videos…"
-          style={{ flex: 1, padding: 10, fontSize: 16 }}
-        />
-        <Button type="submit" disabled={loading || !query.trim()} variant="contained">
-          {loading ? "Searching…" : "Search"}
-        </Button>
-      </Box>
+    <>
+      <Container sx={[mode === "DEBUG" && { border: '3px solid green', borderRadius: 2 }, { height: "auto" }]}>
+        <Box component="form" onSubmit={onSearch} sx={{ display: "flex", gap: 1, marginTop: 2 }}>
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search videos…"
+            style={{ flex: 1, padding: 10, fontSize: 16 }}
+          />
+          <Button type="submit" disabled={loading || !query.trim()} variant="contained">
+            {loading ? "Searching…" : "Search"}
+          </Button>
+        </Box>
 
-      {error && <Typography sx={{ color: "error.main" }}>{error}</Typography>}
+        {error && <Typography sx={{ color: "error.main" }}>{error}</Typography>}
+      </Container>
+      <Slide direction="down" in={open} mountOnEnter unmountOnExit>
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            height: "100%",
+            width: "100%",
+            bgcolor: "background.paper",
+            zIndex: 10,
+            display: "flex",
+            flexDirection: "column",
+            boxShadow: 6,
+          }}
+        >
+          {/* Header */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              px: 2,
+              py: 1.5,
+              borderBottom: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <Typography fontWeight={700}>
+              {loading ? "Searching…" : `Results for “${query}”`}
+            </Typography>
 
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-          gap: 1.5,
-          marginTop: 2,
-        }}
-      >
-        {items.map((it) => {
-          const vid = it.id.videoId;
-          const thumb = it.snippet.thumbnails?.medium?.url;
-          const href = vid ? `https://www.youtube.com/watch?v=${vid}` : "#";
+            <IconButton onClick={closeResults}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
 
-          return (
-            <Link
-              key={`${vid}-${it.snippet.publishedAt}`}
-              href={href}
-              target="_blank"
-              rel="noreferrer"
+          {/* Scrollable results */}
+          <Box sx={{ p: 2, overflow: "auto", flex: 1 }}>
+            <Box
               sx={{
-                textDecoration: "none",
-                color: "inherit",
-                border: "1px solid #ddd",
-                borderRadius: 1.5,
-                overflow: "hidden",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+                gap: 1.5,
               }}
             >
-              {thumb && <img src={thumb} alt="" style={{ width: "100%", display: "block" }} />}
-              <Box sx={{ padding: 1.25 }}>
-                <Box sx={{ fontWeight: 600, lineHeight: 1.2 }}>{it.snippet.title}</Box>
-                <Box sx={{ opacity: 0.7, marginTop: 0.75 }}>{it.snippet.channelTitle}</Box>
-                <Box sx={{ opacity: 0.7, marginTop: 0.75 }}>{it.snippet.publishedAt}</Box>
-              </Box>
-            </Link>
-          );
-        })}
-      </Box>
-    </Container>
+              {items.map((it) => {
+                const vid = it.id.videoId;
+                const thumb = it.snippet.thumbnails?.medium?.url;
+                const href = vid ? `https://www.youtube.com/watch?v=${vid}` : "#";
+
+                return (
+                  <Link
+                    key={`${vid}-${it.snippet.publishedAt}`}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    sx={{
+                      textDecoration: "none",
+                      color: "inherit",
+                      border: "1px solid #ddd",
+                      borderRadius: 1.5,
+                      overflow: "hidden",
+                      display: "block",
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      addToManifest(it);
+                    }}
+                  >
+                    {thumb && (
+                      <img
+                        src={thumb}
+                        alt=""
+                        style={{ width: "100%", display: "block" }}
+                      />
+                    )}
+                    <Box sx={{ p: 1.25 }}>
+                      <Box sx={{ fontWeight: 600, lineHeight: 1.2 }}>
+                        {it.snippet.title}
+                      </Box>
+                      <Box sx={{ opacity: 0.7, mt: 0.75 }}>
+                        {it.snippet.channelTitle}
+                      </Box>
+                      <Box sx={{ opacity: 0.7, mt: 0.75 }}>
+                        {it.snippet.publishedAt}
+                      </Box>
+                    </Box>
+                  </Link>
+                );
+              })}
+            </Box>
+          </Box>
+        </Box>
+      </Slide>
+    </>
   );
 }
