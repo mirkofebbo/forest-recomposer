@@ -44,11 +44,16 @@ export default function BasicMenu({ itemId, manifestData, setManifestData, setSh
   const handleEdit = () => {
     if (!itemId || !manifestData || !setManifestData) return;
 
-    const newToEdit = manifestData.to_edit.filter((item) => item.videoId !== itemId);
+    const itemToAdd =
+      manifestData.to_edit.find((item) => item.videoId === itemId) ||
+      manifestData.completed.find((item) => item.videoId === itemId);
 
+    if (!itemToAdd) return;
     setManifestData({
       ...manifestData,
-      in_progress: newToEdit,
+      in_progress: [
+        itemToAdd,
+      ],
     });
 
     handleClose();
