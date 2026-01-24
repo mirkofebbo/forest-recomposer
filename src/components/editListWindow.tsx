@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
-import { Container, Typography, Box, Link } from '@mui/material';
+import { Container, Typography, Box, Link, CardContent, Card,CardMedia } from '@mui/material';
 import type { Manifest } from "../types";
+import BasicMenu from "./utils/BasicMenu";
 
 export default function EditListWindow({ mode, manifestData, setManifestData }: { mode?: string, manifestData?: Manifest, setManifestData?: React.Dispatch<React.SetStateAction<Manifest>> }) {
 
@@ -36,9 +37,9 @@ export default function EditListWindow({ mode, manifestData, setManifestData }: 
                 <Box
                     sx={{
                         flex: 1,
-                        minHeight: 0,         
+                        minHeight: 0,
                         overflow: "auto",
-                        pr: 0.5,            
+                        pr: 0.5,
                     }}
                 >
                     <Box
@@ -55,61 +56,53 @@ export default function EditListWindow({ mode, manifestData, setManifestData }: 
                             const href = vid ? `https://www.youtube.com/watch?v=${vid}` : undefined;
 
                             return (
-                                <Box
+                                <Card
                                     key={`${vid ?? "noid"}-${it.publishedAt ?? "nodate"}-${idx}`}
+                                    // component={Link}
+                                    // href={href}
+                                    // target="_blank"
+                                    // rel="noreferrer"
+                                    underline="none"
                                     sx={{
-                                        border: "1px solid #ddd",
-                                        borderRadius: 1.5,
-                                        overflow: "hidden",
-                                        bgcolor: "background.paper",
+                                        cursor: href ? "pointer" : "default",
+                                        opacity: href ? 1 : 0.6,
+                                        "&:hover": {
+                                            boxShadow: href ? 3 : 1,
+                                        },
                                     }}
-                                >
-                                    <Link
-                                        href={href}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        underline="none"
-                                        color="inherit"
-                                        sx={{ display: "block" }}
-                                        onClick={(e) => {
-                                            if (!href) e.preventDefault();
-                                        }}
-                                    >
-                                        {thumb ? (
-                                            <Box
-                                                component="img"
-                                                src={thumb}
-                                                alt={it.title ?? ""}
-                                                sx={{
-                                                    width: "100%",
-                                                    display: "block",
-                                                    aspectRatio: "16 / 9",
-                                                    objectFit: "cover",
-                                                    bgcolor: "#f2f2f2",
-                                                }}
-                                            />
-                                        ) : (
-                                            <Box
-                                                sx={{
-                                                    width: "100%",
-                                                    aspectRatio: "16 / 9",
-                                                    bgcolor: "#f2f2f2",
-                                                    display: "grid",
-                                                    placeItems: "center",
-                                                    opacity: 0.7,
-                                                }}
-                                            >
-                                                No thumbnail
-                                            </Box>
-                                        )}
 
-                                        <Box sx={{ p: 1.25 }}>
-                                            <Box sx={{ fontWeight: 600, lineHeight: 1.2 }}>
-                                                {it.title ?? "Untitled"}
-                                            </Box>
+                                >
+                                    <CardMedia
+                                        component="img"
+                                        image={thumb || ""}
+                                        alt={it.title ?? ""}
+                                        sx={{
+                                            aspectRatio: "16 / 9",
+                                            bgcolor: "#f2f2f2",
+                                            display: thumb ? "block" : "none",
+                                        }}
+                                    />
+                                    {!thumb && (
+                                        <Box
+                                            sx={{
+                                                width: "100%",
+                                                aspectRatio: "16 / 9",
+                                                bgcolor: "#f2f2f2",
+                                                display: "grid",
+                                                placeItems: "center",
+                                                opacity: 0.7,
+                                            }}
+                                        >
+                                            No thumbnail
                                         </Box>
-                                    </Link>
-                                </Box>
+                                    )}
+                                    <CardContent sx={{ p: 1.25, flexDirection: "row", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                        <Box sx={{ fontWeight: 600, lineHeight: 1.2 }}>
+                                            {it.title ?? "Untitled"}
+                                        </Box>
+                                        <BasicMenu />
+                                    </CardContent>
+                                </Card>
                             );
                         })}
                     </Box>
