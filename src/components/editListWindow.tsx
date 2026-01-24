@@ -1,9 +1,12 @@
-import React, { useEffect } from "react";
-import { Container, Typography, Box, Link, CardContent, Card,CardMedia } from '@mui/material';
+import React, { useState, useEffect } from "react";
+import { Container, Typography, Box, Link, CardContent, Card, CardMedia } from '@mui/material';
 import type { Manifest } from "../types";
 import BasicMenu from "./utils/BasicMenu";
 
+import CloseIcon from '@mui/icons-material/Close';
+
 export default function EditListWindow({ mode, manifestData, setManifestData }: { mode?: string, manifestData?: Manifest, setManifestData?: React.Dispatch<React.SetStateAction<Manifest>> }) {
+    const [showInfo, setShowInfo] = useState<boolean>(false);
 
     const toEdit = manifestData?.to_edit ?? [];
 
@@ -26,7 +29,7 @@ export default function EditListWindow({ mode, manifestData, setManifestData }: 
             ]}
         >
             <Typography variant="h4" gutterBottom>
-                Edit Window
+                Edit List Window
             </Typography>
 
             {toEdit.length === 0 ? (
@@ -96,11 +99,22 @@ export default function EditListWindow({ mode, manifestData, setManifestData }: 
                                             No thumbnail
                                         </Box>
                                     )}
-                                    <CardContent sx={{ p: 1.25, flexDirection: "row", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                        <Box sx={{ fontWeight: 600, lineHeight: 1.2 }}>
-                                            {it.title ?? "Untitled"}
+                                    <CardContent sx={{ p: 1.25 }}>
+                                        <Box sx={{ flexDirection: "row", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+
+                                            <Box sx={{ fontWeight: 600, lineHeight: 1.2 }}>
+                                                {it.title ?? "Untitled"}
+                                            </Box>
+                                            <BasicMenu itemId={vid} manifestData={manifestData} setManifestData={setManifestData} setShowInfo={setShowInfo} />
                                         </Box>
-                                        <BasicMenu />
+                                        {showInfo && (
+                                            <Box sx={{ mt: 0.5, fontSize: "0.8rem", color: "text.secondary" }}>
+                                                <CloseIcon onClick={() => setShowInfo(false)} />
+                                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                    {it.channelTitle} &bull; {new Date(it.publishedAt).toLocaleDateString()}
+                                                </Typography>
+                                            </Box>
+                                        )}
                                     </CardContent>
                                 </Card>
                             );

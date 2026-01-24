@@ -54,6 +54,7 @@ export default function VideoSearch({ mode, manifestData, setManifestData }: { m
       to_edit: [...manifestData.to_edit, newVideoItem],
     });
   }
+  
   return (
     <>
       <Container sx={[mode === "DEBUG" && { border: '3px solid green', borderRadius: 2 }, { height: "auto" }]}>

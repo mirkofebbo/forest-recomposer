@@ -1,22 +1,57 @@
 // https://mui.com/material-ui/react-menu/
 import * as React from 'react';
-import { Button, Menu, MenuItem, Box} from '@mui/material';
+import { Button, Menu, MenuItem, Box } from '@mui/material';
 
 import MenuIcon from '@mui/icons-material/Menu';
 import InfoOutlineIcon from '@mui/icons-material/InfoOutline';
 import SlideshowIcon from '@mui/icons-material/Slideshow';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import type { Manifest, VideoItem } from "../../types";
 
-export default function BasicMenu() {
+export default function BasicMenu({ itemId, manifestData, setManifestData, setShowInfo }: { itemId?: string, manifestData?: Manifest, setManifestData?: React.Dispatch<React.SetStateAction<Manifest>>, setShowInfo?: React.Dispatch<React.SetStateAction<boolean>> }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
+
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const hendleInfo = () => {
+    if (!itemId || !manifestData) return
+    setShowInfo?.(true);
+    handleClose();
+  }
+
+  const handleEdit = () => {
+    if (!itemId || !manifestData || !setManifestData) return;
+
+    const newToEdit = manifestData.to_edit.filter((item) => item.videoId !== itemId);
+
+    setManifestData({
+      ...manifestData,
+      in_progress: newToEdit,
+    });
+
+    handleClose();
+  }
+
+  const handleDelete = () => {
+    if (!itemId || !manifestData || !setManifestData) return;
+
+    setManifestData({
+      ...manifestData,
+      to_edit: manifestData.to_edit.filter((item) => item.videoId !== itemId),
+      in_progress: manifestData.in_progress.filter((item) => item.videoId !== itemId),
+      completed: manifestData.completed.filter((item) => item.videoId !== itemId),
+    });
+
+    handleClose();
+  }
 
   return (
     <Box>
@@ -40,7 +75,7 @@ export default function BasicMenu() {
           },
         }}
       >
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={hendleInfo}>
           <InfoOutlineIcon sx={{ marginRight: "5px" }} />
           Information
         </MenuItem>
@@ -48,11 +83,11 @@ export default function BasicMenu() {
           <SlideshowIcon sx={{ marginRight: "5px" }} />
           View
         </MenuItem>
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleEdit}>
           <EditIcon sx={{ marginRight: "5px" }} />
           Edit
         </MenuItem>
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleDelete}>
           <DeleteIcon sx={{ marginRight: "5px" }} />
           Delete
         </MenuItem>
