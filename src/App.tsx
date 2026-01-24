@@ -36,7 +36,7 @@ export default function App() {
 
         <Box sx={{ width: CENTER_PANE_WIDTH, height: "100%", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
           <Box>
-            <VideoSearch mode={MODE} manifestData={manifestData} setManifestData={setManifestData} />
+            <VideoSearch mode={MODE} manifestData={manifestData} setManifestData={setManifestData} onOpenVideoModal={openVideo}/>
           </Box>
           <Box sx={{ height: "100%" }}>
             <EditWindow mode={MODE} />

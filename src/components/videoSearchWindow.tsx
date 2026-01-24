@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { Container, Typography, Box, Link, Button, Input, Slide, IconButton } from '@mui/material';
+import { Container, Typography, Box, CardContent, Card, CardMedia, CardActions, Button, Input, Slide, IconButton } from '@mui/material';
 import CloseIcon from "@mui/icons-material/Close";
 import { searchYouTubeVideos } from "./youtube/youtubeSearch";
 import type { Manifest, YouTubeSearchItem } from "../types";
 
-export default function VideoSearch({ mode, manifestData, setManifestData } :
+export default function VideoSearch({ mode, manifestData, setManifestData, onOpenVideoModal }:
   {
     mode?: string,
     manifestData?: Manifest,
-    setManifestData?: Dispatch<SetStateAction<Manifest>>
+    setManifestData?: Dispatch<SetStateAction<Manifest>>,
+    onOpenVideoModal: (videoId: string) => void
   }) {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<YouTubeSearchItem[]>([]);
@@ -129,43 +130,74 @@ export default function VideoSearch({ mode, manifestData, setManifestData } :
                 const href = vid ? `https://www.youtube.com/watch?v=${vid}` : "#";
 
                 return (
-                  <Link
+                  <Card
                     key={`${vid}-${it.snippet.publishedAt}`}
                     href={href}
                     target="_blank"
                     rel="noreferrer"
                     sx={{
-                      textDecoration: "none",
-                      color: "inherit",
-                      border: "1px solid #ddd",
-                      borderRadius: 1.5,
-                      overflow: "hidden",
-                      display: "block",
-                    }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      addToManifest(it);
+                      display: "flex",
+                      flexDirection: "column",
+                      height: "100%",
+                      cursor: href ? "pointer" : "default",
+                      opacity: href ? 1 : 0.6,
+                      "&:hover": {
+                        boxShadow: href ? 3 : 1,
+                      },
                     }}
                   >
-                    {thumb && (
-                      <img
-                        src={thumb}
-                        alt=""
-                        style={{ width: "100%", display: "block" }}
-                      />
+                    <CardMedia
+                      component="img"
+                      image={thumb || ""}
+                      alt={it.snippet.title ?? ""}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (vid) onOpenVideoModal(vid);
+                      }}
+                      sx={{
+                        aspectRatio: "16 / 9",
+                        bgcolor: "#f2f2f2",
+                        display: thumb ? "block" : "none",
+                      }}
+                    />
+                    {!thumb && (
+                      <Box
+                        sx={{
+                          width: "100%",
+                          aspectRatio: "16 / 9",
+                          bgcolor: "#f2f2f2",
+                          display: "grid",
+                          placeItems: "center",
+                          opacity: 0.7,
+                        }}
+                      >
+                        No thumbnail
+                      </Box>
                     )}
-                    <Box sx={{ p: 1.25 }}>
+
+                    <CardContent sx={{ p: 1.25 }}>
                       <Box sx={{ fontWeight: 600, lineHeight: 1.2 }}>
                         {it.snippet.title}
                       </Box>
                       <Box sx={{ opacity: 0.7, mt: 0.75 }}>
                         {it.snippet.channelTitle}
                       </Box>
-                      <Box sx={{ opacity: 0.7, mt: 0.75 }}>
-                        {it.snippet.publishedAt}
-                      </Box>
-                    </Box>
-                  </Link>
+                    </CardContent>
+
+                    <Box sx={{ flexGrow: 1 }} /> {/* pushes actions to bottom */}
+
+                    <CardActions sx={{ p: 1.25, pt: 0 }}>
+                      <Button variant="contained" fullWidth
+                        onClick={(e) => {
+                          e.preventDefault();
+                          addToManifest(it);
+                        }}
+                      >
+                        add
+                      </Button>
+                    </CardActions>
+                  </Card>
                 );
               })}
             </Box>
