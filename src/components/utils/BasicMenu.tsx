@@ -1,5 +1,6 @@
 // https://mui.com/material-ui/react-menu/
-import * as React from 'react';
+import React, { useState } from 'react';
+import type { Dispatch, SetStateAction, MouseEvent } from "react";
 import { Button, Menu, MenuItem, Box } from '@mui/material';
 
 import MenuIcon from '@mui/icons-material/Menu';
@@ -7,13 +8,21 @@ import InfoOutlineIcon from '@mui/icons-material/InfoOutline';
 import SlideshowIcon from '@mui/icons-material/Slideshow';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import type { Manifest, VideoItem } from "../../types";
+import type { Manifest } from "../../types";
 
-export default function BasicMenu({ itemId, manifestData, setManifestData, setShowInfo }: { itemId?: string, manifestData?: Manifest, setManifestData?: React.Dispatch<React.SetStateAction<Manifest>>, setShowInfo?: React.Dispatch<React.SetStateAction<boolean>> }) {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+export default function BasicMenu({ itemId, manifestData, setManifestData, setShowInfo, onOpenVideoModal }:
+  {
+    itemId?: string,
+    manifestData?: Manifest,
+    setManifestData?: Dispatch<SetStateAction<Manifest>>,
+    setShowInfo?: Dispatch<SetStateAction<boolean>>,
+    onOpenVideoModal: (videoId: string) => void
+  }) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
   const open = Boolean(anchorEl);
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -27,6 +36,11 @@ export default function BasicMenu({ itemId, manifestData, setManifestData, setSh
     handleClose();
   }
 
+  const handleView = () => {
+    if (!itemId) return;
+    onOpenVideoModal(itemId);
+    handleClose();
+  }
   const handleEdit = () => {
     if (!itemId || !manifestData || !setManifestData) return;
 
@@ -79,7 +93,7 @@ export default function BasicMenu({ itemId, manifestData, setManifestData, setSh
           <InfoOutlineIcon sx={{ marginRight: "5px" }} />
           Information
         </MenuItem>
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleView}>
           <SlideshowIcon sx={{ marginRight: "5px" }} />
           View
         </MenuItem>
