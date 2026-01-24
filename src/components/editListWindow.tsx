@@ -18,7 +18,7 @@ export default function EditListWindow({ mode, manifestData, setManifestData, on
     const toEdit = manifestData?.to_edit ?? [];
 
     useEffect(() => {
-        console.log("EditWindow manifestData updated:", manifestData);
+        console.log("EditListWindow  updated:", manifestData);
     }, [manifestData]);
 
     return (

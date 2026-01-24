@@ -39,7 +39,7 @@ export default function App() {
             <VideoSearch mode={MODE} manifestData={manifestData} setManifestData={setManifestData} onOpenVideoModal={openVideo}/>
           </Box>
           <Box sx={{ height: "100%" }}>
-            <EditWindow mode={MODE} />
+            <EditWindow mode={MODE} manifestData={manifestData} setManifestData={setManifestData} />
           </Box>
 
         </Box>
