@@ -1,8 +1,12 @@
-import React, { useEffect } from "react";
-import { Container, Typography, Box, Link } from '@mui/material';
+import React, { useState, useEffect } from "react";
+import { Container, Typography, Box, Link, CardContent, Card, CardMedia } from '@mui/material';
 import type { Manifest } from "../types";
+import BasicMenu from "./utils/BasicMenu";
+
+import CloseIcon from '@mui/icons-material/Close';
 
 export default function EditListWindow({ mode, manifestData, setManifestData }: { mode?: string, manifestData?: Manifest, setManifestData?: React.Dispatch<React.SetStateAction<Manifest>> }) {
+    const [showInfo, setShowInfo] = useState<boolean>(false);
 
     const toEdit = manifestData?.to_edit ?? [];
 
@@ -25,7 +29,7 @@ export default function EditListWindow({ mode, manifestData, setManifestData }: 
             ]}
         >
             <Typography variant="h4" gutterBottom>
-                Edit Window
+                Edit List Window
             </Typography>
 
             {toEdit.length === 0 ? (
@@ -36,9 +40,9 @@ export default function EditListWindow({ mode, manifestData, setManifestData }: 
                 <Box
                     sx={{
                         flex: 1,
-                        minHeight: 0,         
+                        minHeight: 0,
                         overflow: "auto",
-                        pr: 0.5,            
+                        pr: 0.5,
                     }}
                 >
                     <Box
@@ -55,61 +59,64 @@ export default function EditListWindow({ mode, manifestData, setManifestData }: 
                             const href = vid ? `https://www.youtube.com/watch?v=${vid}` : undefined;
 
                             return (
-                                <Box
+                                <Card
                                     key={`${vid ?? "noid"}-${it.publishedAt ?? "nodate"}-${idx}`}
+                                    // component={Link}
+                                    // href={href}
+                                    // target="_blank"
+                                    // rel="noreferrer"
+                                    underline="none"
                                     sx={{
-                                        border: "1px solid #ddd",
-                                        borderRadius: 1.5,
-                                        overflow: "hidden",
-                                        bgcolor: "background.paper",
+                                        cursor: href ? "pointer" : "default",
+                                        opacity: href ? 1 : 0.6,
+                                        "&:hover": {
+                                            boxShadow: href ? 3 : 1,
+                                        },
                                     }}
-                                >
-                                    <Link
-                                        href={href}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        underline="none"
-                                        color="inherit"
-                                        sx={{ display: "block" }}
-                                        onClick={(e) => {
-                                            if (!href) e.preventDefault();
-                                        }}
-                                    >
-                                        {thumb ? (
-                                            <Box
-                                                component="img"
-                                                src={thumb}
-                                                alt={it.title ?? ""}
-                                                sx={{
-                                                    width: "100%",
-                                                    display: "block",
-                                                    aspectRatio: "16 / 9",
-                                                    objectFit: "cover",
-                                                    bgcolor: "#f2f2f2",
-                                                }}
-                                            />
-                                        ) : (
-                                            <Box
-                                                sx={{
-                                                    width: "100%",
-                                                    aspectRatio: "16 / 9",
-                                                    bgcolor: "#f2f2f2",
-                                                    display: "grid",
-                                                    placeItems: "center",
-                                                    opacity: 0.7,
-                                                }}
-                                            >
-                                                No thumbnail
-                                            </Box>
-                                        )}
 
-                                        <Box sx={{ p: 1.25 }}>
+                                >
+                                    <CardMedia
+                                        component="img"
+                                        image={thumb || ""}
+                                        alt={it.title ?? ""}
+                                        sx={{
+                                            aspectRatio: "16 / 9",
+                                            bgcolor: "#f2f2f2",
+                                            display: thumb ? "block" : "none",
+                                        }}
+                                    />
+                                    {!thumb && (
+                                        <Box
+                                            sx={{
+                                                width: "100%",
+                                                aspectRatio: "16 / 9",
+                                                bgcolor: "#f2f2f2",
+                                                display: "grid",
+                                                placeItems: "center",
+                                                opacity: 0.7,
+                                            }}
+                                        >
+                                            No thumbnail
+                                        </Box>
+                                    )}
+                                    <CardContent sx={{ p: 1.25 }}>
+                                        <Box sx={{ flexDirection: "row", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+
                                             <Box sx={{ fontWeight: 600, lineHeight: 1.2 }}>
                                                 {it.title ?? "Untitled"}
                                             </Box>
+                                            <BasicMenu itemId={vid} manifestData={manifestData} setManifestData={setManifestData} setShowInfo={setShowInfo} />
                                         </Box>
-                                    </Link>
-                                </Box>
+                                        {showInfo && (
+                                            <Box sx={{ mt: 0.5, fontSize: "0.8rem", color: "text.secondary" }}>
+                                                <CloseIcon onClick={() => setShowInfo(false)} />
+                                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                    {it.channelTitle} &bull; {new Date(it.publishedAt).toLocaleDateString()}
+                                                </Typography>
+                                            </Box>
+                                        )}
+                                    </CardContent>
+                                </Card>
                             );
                         })}
                     </Box>
