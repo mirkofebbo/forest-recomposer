@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { Container, Typography, Box, Link, Button, Input, Slide, IconButton } from '@mui/material';
 import CloseIcon from "@mui/icons-material/Close";
 import { searchYouTubeVideos } from "./youtube/youtubeSearch";
-import type { YouTubeSearchItem } from "../types";
+import type { Manifest, YouTubeSearchItem } from "../types";
 
-export default function VideoSearch({ mode }: { mode?: string }) {
+export default function VideoSearch({ mode, manifestData, setManifestData }: { mode?: string, manifestData?: Manifest, setManifestData?: React.Dispatch<React.SetStateAction<Manifest>> }) {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<YouTubeSearchItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -33,6 +33,24 @@ export default function VideoSearch({ mode }: { mode?: string }) {
     setQuery("");
   }
 
+  function addToManifest(video: YouTubeSearchItem) {
+    if (!video.id.videoId) return;
+    if (!manifestData || !setManifestData) return;
+
+    const newVideoItem = {
+      videoId: video.id.videoId,
+      title: video.snippet.title,
+      channelTitle: video.snippet.channelTitle,
+      publishedAt: video.snippet.publishedAt,
+      thumbnailUrl: video.snippet.thumbnails?.medium?.url || "",
+      clips: [],
+    };
+
+    setManifestData({
+      ...manifestData,
+      to_edit: [...manifestData.to_edit, newVideoItem],
+    });
+  }
   return (
     <>
       <Container sx={[mode === "DEBUG" && { border: '3px solid green', borderRadius: 2 }, { height: "auto" }]}>
@@ -113,6 +131,10 @@ export default function VideoSearch({ mode }: { mode?: string }) {
                       borderRadius: 1.5,
                       overflow: "hidden",
                       display: "block",
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      addToManifest(it);
                     }}
                   >
                     {thumb && (
