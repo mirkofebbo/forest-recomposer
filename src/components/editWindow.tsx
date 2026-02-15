@@ -85,10 +85,6 @@ export default function EditWindow({
   return (
     <Container sx={[mode === "DEBUG" && { border: "3px solid blue", borderRadius: 1 }, { height: "100%", display: "flex", flexDirection: "column", minHeight: 0 }]}>
       <Box sx={{ mt: 2 }}>
-        <Typography variant="h4" gutterBottom>
-          Edit Window
-        </Typography>
-
         <Box sx={{ width: "100%", aspectRatio: "16 / 9", bgcolor: "black", borderRadius: 2, overflow: "hidden" }}>
           {video?.videoId ? (
             <YouTubePlayer videoId={video.videoId} onPlayerReady={setPlayer} />
@@ -119,7 +115,6 @@ export default function EditWindow({
           player={player}
           video={video}
           onSaveClip={saveClipToManifest}
-          // 👇 Add these two optional props to TimecodeEditor (small tweak)
           onDraftStartChange={setDraftStart}
           onDraftEndChange={setDraftEnd}
         />

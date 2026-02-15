@@ -20,22 +20,34 @@ export function TimecodeEditor({
     player,
     video,
     onSaveClip,
+    onDraftStartChange,
+    onDraftEndChange,
 }: {
     player: any | null;
     video: VideoItem | undefined;
     onSaveClip: (clip: Clip) => void;
+    onDraftStartChange: (start: number | null) => void;
+    onDraftEndChange: (end: number | null) => void;
 }) {
     const [start, setStart] = useState<number | null>(null);
     const [end, setEnd] = useState<number | null>(null);
     const [note, setNote] = useState("");
-    const [tags, setTags] = useState<TagList[]>(["OTHER"]); // ✅ default tag
+    const [tags, setTags] = useState<TagList[]>(["OTHER"]);
 
     const canUse = Boolean(player && video?.videoId);
 
     const now = () => (player ? Number(player.getCurrentTime?.() ?? 0) : 0);
 
-    const setStartNow = () => setStart(now());
-    const setEndNow = () => setEnd(now());
+    const setStartNow = () => {
+        const t = now();
+        setStart(t);
+        onDraftStartChange?.(t);
+    };
+    const setEndNow = () => {
+        const t = now();
+        setEnd(t);
+        onDraftEndChange?.(t);
+    };
 
     const swapIfNeeded = (a: number, b: number) => (a <= b ? [a, b] : [b, a]);
 
@@ -61,14 +73,14 @@ export function TimecodeEditor({
             id: makeId(),
             start: Number(clipStart.toFixed(2)),
             end: clipEnd == null ? null : Number(clipEnd.toFixed(2)),
-            tags: tags,              
+            tags: tags,
             note: note.trim() || "",
         });
 
         setStart(null);
         setEnd(null);
         setNote("");
-        setTags(["OTHER"]);           
+        setTags(["OTHER"]);
     };
 
     return (

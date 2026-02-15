@@ -1,9 +1,17 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import type { Clip } from "../types";
 
 function clamp(n: number, a: number, b: number) {
     return Math.max(a, Math.min(b, n));
+}
+
+function fmtHMS(seconds: number) {
+    const s = Math.floor(seconds % 60);
+    const m = Math.floor((seconds / 60) % 60);
+    const h = Math.floor(seconds / 3600);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
 }
 
 type Props = {
@@ -23,23 +31,39 @@ export default function VideoTimelineD3({
     end,
     savedClips = [],
     onSeek,
-    height = 64,
+    height = 70,
 }: Props) {
+    const wrapperRef = useRef<HTMLDivElement | null>(null);
     const svgRef = useRef<SVGSVGElement | null>(null);
+    const [width, setWidth] = useState(0);
 
-    const fmt = useMemo(() => d3.timeFormat("%M:%S"), []);
-    const fmtTime = (t: number) => {
-        return fmt(new Date(t * 1000));
-    };
+    // Measure width reliably
+    useEffect(() => {
+        const el = wrapperRef.current;
+        if (!el) return;
+
+        const ro = new ResizeObserver(() => {
+            const w = Math.floor(el.getBoundingClientRect().width);
+            if (w > 0) setWidth(w);
+        });
+
+        ro.observe(el);
+
+        // initial measure
+        const w0 = Math.floor(el.getBoundingClientRect().width);
+        if (w0 > 0) setWidth(w0);
+
+        return () => ro.disconnect();
+    }, []);
 
     useEffect(() => {
         const svgEl = svgRef.current;
         if (!svgEl) return;
+        if (width <= 0) return;
 
-        const width = svgEl.clientWidth || 600;
-        const margin = { top: 14, right: 12, bottom: 18, left: 12 };
-        const innerW = width - margin.left - margin.right;
-        const innerH = height - margin.top - margin.bottom;
+        const margin = { top: 16, right: 12, bottom: 18, left: 12 };
+        const innerW = Math.max(1, width - margin.left - margin.right);
+        const innerH = Math.max(1, height - margin.top - margin.bottom);
 
         const dur = Math.max(0.001, duration || 0.001);
         const ct = clamp(currentTime || 0, 0, dur);
@@ -65,7 +89,7 @@ export default function VideoTimelineD3({
             .attr("rx", 6)
             .attr("fill", "#e6e6e6");
 
-        // Saved clips (ranges)
+        // Saved clips ranges
         if (savedClips.length) {
             g.append("g")
                 .selectAll("rect")
@@ -84,7 +108,7 @@ export default function VideoTimelineD3({
                 .attr("opacity", 0.35);
         }
 
-        // Current clip (start..end) highlight
+        // Draft clip highlight
         if (start != null) {
             const s = clamp(start, 0, dur);
             const e = clamp(end == null ? dur : end, 0, dur);
@@ -102,9 +126,10 @@ export default function VideoTimelineD3({
 
         // Start marker
         if (start != null) {
+            const s = x(clamp(start, 0, dur));
             g.append("line")
-                .attr("x1", x(clamp(start, 0, dur)))
-                .attr("x2", x(clamp(start, 0, dur)))
+                .attr("x1", s)
+                .attr("x2", s)
                 .attr("y1", innerH / 2 - 14)
                 .attr("y2", innerH / 2 + 14)
                 .attr("stroke", "#424242")
@@ -113,9 +138,10 @@ export default function VideoTimelineD3({
 
         // End marker
         if (end != null) {
+            const e = x(clamp(end, 0, dur));
             g.append("line")
-                .attr("x1", x(clamp(end, 0, dur)))
-                .attr("x2", x(clamp(end, 0, dur)))
+                .attr("x1", e)
+                .attr("x2", e)
                 .attr("y1", innerH / 2 - 14)
                 .attr("y2", innerH / 2 + 14)
                 .attr("stroke", "#424242")
@@ -124,26 +150,27 @@ export default function VideoTimelineD3({
         }
 
         // Playhead
+        const px = x(ct);
         g.append("line")
-            .attr("x1", x(ct))
-            .attr("x2", x(ct))
+            .attr("x1", px)
+            .attr("x2", px)
             .attr("y1", innerH / 2 - 18)
             .attr("y2", innerH / 2 + 18)
             .attr("stroke", "#111")
             .attr("stroke-width", 2);
 
         g.append("circle")
-            .attr("cx", x(ct))
+            .attr("cx", px)
             .attr("cy", innerH / 2)
             .attr("r", 5)
             .attr("fill", "#111");
 
-        // Axis labels (just 0 and end, plus a current time label)
+        // Labels (these are your “timecodes”)
         g.append("text")
             .attr("x", 0)
             .attr("y", innerH + 14)
             .attr("font-size", 11)
-            .attr("fill", "#333")
+            .attr("fill", "#111")
             .text("0:00");
 
         g.append("text")
@@ -151,18 +178,18 @@ export default function VideoTimelineD3({
             .attr("y", innerH + 14)
             .attr("text-anchor", "end")
             .attr("font-size", 11)
-            .attr("fill", "#333")
-            .text(fmtTime(dur));
+            .attr("fill", "#111")
+            .text(fmtHMS(dur));
 
         g.append("text")
-            .attr("x", x(ct))
+            .attr("x", px)
             .attr("y", -2)
             .attr("text-anchor", "middle")
             .attr("font-size", 11)
             .attr("fill", "#111")
-            .text(fmtTime(ct));
+            .text(fmtHMS(ct));
 
-        // Click-to-seek interaction (transparent overlay)
+        // Click-to-seek overlay
         g.append("rect")
             .attr("x", 0)
             .attr("y", innerH / 2 - 18)
@@ -173,10 +200,13 @@ export default function VideoTimelineD3({
             .on("click", (event) => {
                 if (!onSeek) return;
                 const [mx] = d3.pointer(event);
-                const t = x.invert(mx);
-                onSeek(clamp(t, 0, dur));
+                onSeek(clamp(x.invert(mx), 0, dur));
             });
-    }, [duration, currentTime, start, end, savedClips, onSeek, height]);
+    }, [width, duration, currentTime, start, end, savedClips, onSeek, height]);
 
-    return <svg ref={svgRef} />;
+    return (
+        <div ref={wrapperRef} style={{ width: "100%" }}>
+            <svg ref={svgRef} />
+        </div>
+    );
 }
