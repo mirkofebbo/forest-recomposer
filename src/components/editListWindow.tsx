@@ -72,7 +72,6 @@ export default function EditListWindow({ mode, manifestData, setManifestData, on
                                     // href={href}
                                     // target="_blank"
                                     // rel="noreferrer"
-                                    underline="none"
                                     sx={{
                                         cursor: href ? "pointer" : "default",
                                         opacity: href ? 1 : 0.6,
@@ -80,7 +79,6 @@ export default function EditListWindow({ mode, manifestData, setManifestData, on
                                             boxShadow: href ? 3 : 1,
                                         },
                                     }}
-
                                 >
                                     <CardMedia
                                         component="img"

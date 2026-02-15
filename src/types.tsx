@@ -14,15 +14,15 @@ export type VideoItem = {
   channelTitle: string;
   publishedAt: string;
   thumbnailUrl: string;
-  clips: Array<Timestamp>;
+  clips: Array<Clip>;
 };
 
-export type Timestamp = {
+export type Clip = {
   id: string;
-  start: number;
-  end: number;
-  tags: string[];
-  note: string;
+  start: number;       
+  end: number | null;  
+  tags?: string[];
+  note?: string;
 };
 
 export type Manifest = {
