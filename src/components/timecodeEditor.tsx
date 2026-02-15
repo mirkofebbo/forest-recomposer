@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Button, TextField, Typography, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { Box, Button, TextField, Typography, FormControl, InputLabel, Select, MenuItem, OutlinedInput, Chip } from "@mui/material";
 import type { Clip, VideoItem, TagList } from "../types";
 
 const TAG_OPTIONS: TagList[] = ["GREEN", "HUMAN", "WATER", "ANIMAL", "SUNLIGHT", "SOIL", "OTHER"];
@@ -16,7 +16,7 @@ function makeId() {
     return `clip_${Math.random().toString(16).slice(2)}_${Date.now()}`;
 }
 
-export function TimecodeEditor({
+export default function TimecodeEditor({
     player,
     video,
     onSaveClip,
@@ -26,18 +26,33 @@ export function TimecodeEditor({
     player: any | null;
     video: VideoItem | undefined;
     onSaveClip: (clip: Clip) => void;
-    onDraftStartChange: (start: number | null) => void;
-    onDraftEndChange: (end: number | null) => void;
+    onDraftStartChange?: (t: number | null) => void;
+    onDraftEndChange?: (t: number | null) => void;
 }) {
     const [start, setStart] = useState<number | null>(null);
     const [end, setEnd] = useState<number | null>(null);
     const [note, setNote] = useState("");
     const [tags, setTags] = useState<TagList[]>(["OTHER"]);
+    const [markMode, setMarkMode] = useState<"start" | "end">("start");
 
     const canUse = Boolean(player && video?.videoId);
 
     const now = () => (player ? Number(player.getCurrentTime?.() ?? 0) : 0);
 
+    const mark = () => {
+        if (!player) return;
+        const t = Number(player.getCurrentTime?.() ?? 0);
+
+        if (markMode === "start") {
+            setStart(t);
+            onDraftStartChange?.(t);
+            setMarkMode("end");
+        } else {
+            setEnd(t);
+            onDraftEndChange?.(t);
+            setMarkMode("start");
+        }
+    };
     const setStartNow = () => {
         const t = now();
         setStart(t);
@@ -111,13 +126,19 @@ export function TimecodeEditor({
             </Box>
 
             <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center" }}>
-                <FormControl size="small" sx={{ minWidth: 180 }} disabled={!canUse}>
-                    <InputLabel id="clip-tag-label">Tag</InputLabel>
+                <FormControl size="small" sx={{ minWidth: 260 }} disabled={!canUse}>
+                    <InputLabel id="clip-tags-label">Tags</InputLabel>
                     <Select<TagList[]>
+                        labelId="clip-tags-label"
                         multiple
                         value={tags}
                         onChange={(e) => setTags(e.target.value as TagList[])}
-                        renderValue={(selected) => selected.join(", ")}
+                        input={<OutlinedInput label="Tags" />}
+                        renderValue={(selected) => (
+                            <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+                                {selected.map((t) => <Chip key={t} size="small" label={t} />)}
+                            </Box>
+                        )}
                     >
                         {TAG_OPTIONS.map((t) => (
                             <MenuItem key={t} value={t}>
