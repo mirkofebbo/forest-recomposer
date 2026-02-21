@@ -1,17 +1,21 @@
 import React, { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { Container, Typography, Box, CardContent, Card, CardMedia, CardActions, Button, Input, Slide, IconButton } from '@mui/material';
+import { Container, Typography, Box, CardContent, Card, CardMedia, CardActions, Button, Input, Slide, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { searchYouTubeVideos } from "./youtube/youtubeSearch";
 import type { Manifest, YouTubeSearchItem } from "../types";
 
-export default function VideoSearch({ mode, manifestData, setManifestData, onOpenVideoModal }:
-  {
-    mode?: string,
-    manifestData?: Manifest,
-    setManifestData?: Dispatch<SetStateAction<Manifest>>,
-    onOpenVideoModal: (videoId: string) => void
-  }) {
+export default function VideoSearch({
+  mode,
+  manifestData,
+  setManifestData,
+  onOpenVideoModal,
+}: {
+  mode?: string;
+  manifestData?: Manifest;
+  setManifestData?: Dispatch<SetStateAction<Manifest>>;
+  onOpenVideoModal: (videoId: string) => void;
+}) {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<YouTubeSearchItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,7 +48,7 @@ export default function VideoSearch({ mode, manifestData, setManifestData, onOpe
     if (!video.id.videoId) return;
     if (!manifestData || !setManifestData) return;
     if (manifestData.to_edit.find((v) => v.videoId === video.id.videoId)) {
-      return; // already in to_edit
+      return;
     }
 
     const newVideoItem = {
@@ -64,6 +68,7 @@ export default function VideoSearch({ mode, manifestData, setManifestData, onOpe
 
   return (
     <>
+      {/* Search input */}
       <Container sx={[mode === "DEBUG" && { border: '3px solid green', borderRadius: 2 }, { height: "auto" }]}>
         <Box component="form" onSubmit={onSearch} sx={{ display: "flex", gap: 1, marginTop: 2 }}>
           <Input
@@ -79,6 +84,7 @@ export default function VideoSearch({ mode, manifestData, setManifestData, onOpe
 
         {error && <Typography sx={{ color: "error.main" }}>{error}</Typography>}
       </Container>
+      {/* Search results modal */}
       <Slide direction="down" in={open} mountOnEnter unmountOnExit>
         <Box
           sx={{
@@ -177,7 +183,7 @@ export default function VideoSearch({ mode, manifestData, setManifestData, onOpe
                         No thumbnail
                       </Box>
                     )}
-
+                    {/* Title and channel */}
                     <CardContent sx={{ p: 1.25 }}>
                       <Box sx={{ fontWeight: 600, lineHeight: 1.2 }}>
                         {it.snippet.title}
@@ -187,10 +193,12 @@ export default function VideoSearch({ mode, manifestData, setManifestData, onOpe
                       </Box>
                     </CardContent>
 
-                    <Box sx={{ flexGrow: 1 }} /> {/* pushes actions to bottom */}
-
+                    <Box sx={{ flexGrow: 1 }} />
+                    {/* Add to edit list button */}
                     <CardActions sx={{ p: 1.25, pt: 0 }}>
-                      <Button variant="contained" fullWidth
+                      <Button
+                        variant="contained"
+                        fullWidth
                         onClick={(e) => {
                           e.preventDefault();
                           addToManifest(it);

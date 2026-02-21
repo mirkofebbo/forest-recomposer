@@ -54,7 +54,6 @@ export default function TimecodeEditor({
             clipEnd = e;
         }
 
-        // clamp
         clipStart = Math.max(0, Math.min(clipStart, duration || clipStart));
         if (clipEnd != null) clipEnd = Math.max(0, Math.min(clipEnd, duration || clipEnd));
 

@@ -32,7 +32,7 @@ export default function VideoTimelineD3({
     height = 64,
 }: Props) {
     const svgRef = useRef<SVGSVGElement | null>(null);
-    
+
     const fmt = useMemo(() => d3.timeFormat("%M:%S"), []);
     const fmtTime = (t: number) => fmt(new Date(t * 1000));
 
@@ -40,17 +40,20 @@ export default function VideoTimelineD3({
         const svgEl = svgRef.current;
         if (!svgEl) return;
 
+        // Dimensions and scales
         const width = svgEl.clientWidth || 600;
         const margin = { top: 14, right: 12, bottom: 18, left: 12 };
         const innerW = width - margin.left - margin.right;
         const innerH = height - margin.top - margin.bottom;
 
+        // Time scale
         const dur = Math.max(0.001, duration || 0.001);
         const ct = clamp(currentTime || 0, 0, dur);
 
         const x = d3.scaleLinear().domain([0, dur]).range([0, innerW]);
         const xInv = (px: number) => clamp(x.invert(px), 0, dur);
 
+        // Setup SVG
         const svg = d3.select(svgEl);
         svg.selectAll("*").remove();
 
@@ -69,6 +72,7 @@ export default function VideoTimelineD3({
         };
         const pointerTime = (evt: any) => xInv(pointerX(evt));
 
+        // Timeline background
         g.append("rect")
             .attr("x", 0)
             .attr("y", innerH / 2 - 6)
@@ -77,6 +81,7 @@ export default function VideoTimelineD3({
             .attr("rx", 6)
             .attr("fill", "#e6e6e6");
 
+        // Draft clip area
         if (start != null) {
             const s = clamp(start, 0, dur);
             const e = clamp(end == null ? dur : end, 0, dur);
@@ -91,7 +96,7 @@ export default function VideoTimelineD3({
                 .attr("fill", "#9e9e9e")
                 .attr("opacity", 0.35);
         }
-
+        // Clickable area for seeking
         g.append("rect")
             .attr("x", 0)
             .attr("y", innerH / 2 - 18)
@@ -106,6 +111,7 @@ export default function VideoTimelineD3({
                 onSeek(t);
             });
 
+        // Clip groups
         const clipG = g.append("g");
 
         const norm = (c: Clip) => {
@@ -122,6 +128,7 @@ export default function VideoTimelineD3({
             .append("g")
             .attr("class", "clip");
 
+        // Clip body
         groups
             .append("rect")
             .attr("class", "clip-body")
@@ -141,7 +148,7 @@ export default function VideoTimelineD3({
 
 
         const selected = groups.filter((d) => d.id === selectedClipId);
-
+        // Delete button (circle with "×")
         selected
             .append("circle")
             .attr("cx", (d) => x(norm(d).e) + 12)
@@ -156,7 +163,7 @@ export default function VideoTimelineD3({
                 event.stopPropagation();
                 onDeleteClip?.(d.id);
             });
-
+        // "×" icon for delete button
         selected
             .append("text")
             .attr("x", (d) => x(norm(d).e) + 12)
@@ -174,13 +181,13 @@ export default function VideoTimelineD3({
                 onDeleteClip?.(d.id);
             });
 
-        // Show delete button on hover
+        // Show delete button
         groups.on("mouseenter", function () {
             d3.select(this).selectAll("circle, text").style("opacity", 1);
         }).on("mouseleave", function () {
             d3.select(this).selectAll("circle, text").style("opacity", 0);
         });
-
+        // Clip start/end markers
         if (start != null) {
             g.append("line")
                 .attr("x1", x(clamp(start, 0, dur)))
@@ -200,7 +207,7 @@ export default function VideoTimelineD3({
                 .attr("stroke-width", 2)
                 .attr("stroke-dasharray", "4 3");
         }
-
+        // Playhead
         g.append("line")
             .attr("class", "playhead-line")
             .attr("x1", x(ct))
@@ -217,6 +224,7 @@ export default function VideoTimelineD3({
             .attr("r", 5)
             .attr("fill", "#111");
 
+        // Time labels
         g.append("text")
             .attr("class", "playhead-label")
             .attr("x", 0)
@@ -241,6 +249,7 @@ export default function VideoTimelineD3({
             .attr("fill", "#111")
             .text(fmtTime(ct));
     }, [duration, start, end, savedClips, selectedClipId, onSeek, onDeleteClip, onSelectClip, height]);
+
     useEffect(() => {
         const svgEl = svgRef.current;
         if (!svgEl) return;
@@ -255,7 +264,7 @@ export default function VideoTimelineD3({
         const x = d3.scaleLinear().domain([0, dur]).range([0, innerW]);
 
         const svg = d3.select(svgEl);
-        const g = svg.select("g"); // your translated root group
+        const g = svg.select("g");
 
         // Move playhead only
         g.select<SVGLineElement>("line.playhead-line")
@@ -269,5 +278,6 @@ export default function VideoTimelineD3({
             .attr("x", x(ct))
             .text(fmtTime(ct));
     }, [currentTime, duration]);
+
     return <svg ref={svgRef} />;
 }
