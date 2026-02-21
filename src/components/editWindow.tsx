@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Container, Typography, Box } from "@mui/material";
+import { useEffect, useState } from "react";
+import { Container, Box } from "@mui/material";
 import type { Dispatch, SetStateAction } from "react";
 import type { Manifest, Clip } from "../types";
 import YouTubePlayer from "./youtube/youTubePlayer";

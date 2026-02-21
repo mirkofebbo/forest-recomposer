@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Box, Button, TextField, Typography, FormControl, InputLabel, Select, MenuItem, OutlinedInput, Chip } from "@mui/material";
+import { useState } from "react";
+import { Box, Button, TextField, FormControl, InputLabel, Select, MenuItem, OutlinedInput, Chip } from "@mui/material";
 import type { Clip, VideoItem, TagList } from "../types";
 
 const TAG_OPTIONS: TagList[] = ["GREEN", "HUMAN", "WATER", "ANIMAL", "SUNLIGHT", "SOIL", "OTHER"];

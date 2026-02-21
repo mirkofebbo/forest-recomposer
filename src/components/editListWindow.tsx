@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { Container, Typography, Box, CardContent, Card, CardMedia } from '@mui/material';
 import type { Manifest } from "../types";
@@ -35,9 +35,7 @@ export default function EditListWindow({ mode, manifestData, setManifestData, on
                 },
             ]}
         >
-            <Typography variant="h4" gutterBottom>
-                Edit List Window
-            </Typography>
+            {/* Edit List Window */}
 
             {toEdit.length === 0 ? (
                 <Box sx={{ opacity: 0.7 }}>
@@ -60,6 +58,7 @@ export default function EditListWindow({ mode, manifestData, setManifestData, on
                             alignContent: "start",
                         }}
                     >
+                        {/* Video cards for each video */}
                         {toEdit.map((it, idx) => {
                             const vid = it.videoId;
                             const thumb = it.thumbnailUrl;
@@ -104,6 +103,7 @@ export default function EditListWindow({ mode, manifestData, setManifestData, on
                                             No thumbnail
                                         </Box>
                                     )}
+                                    {/* Title, channel, and menu */}
                                     <CardContent sx={{ p: 1.25 }}>
                                         <Box sx={{ flexDirection: "row", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
 

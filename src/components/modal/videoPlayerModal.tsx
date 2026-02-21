@@ -1,5 +1,4 @@
 // https://mui.com/material-ui/react-modal/#basic-modal
-import * as React from "react";
 import { Typography, Box, Modal, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -18,7 +17,7 @@ const style = {
 
   p: 2,
 
-  outline: "none", // ✅ removes the blue outline on focus
+  outline: "none",
 };
 
 export default function VideoPlayerModal({
