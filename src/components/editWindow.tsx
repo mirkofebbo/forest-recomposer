@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Container, Typography, Box } from "@mui/material";
 import type { Dispatch, SetStateAction } from "react";
 import type { Manifest, Clip } from "../types";
-import  YouTubePlayer  from "./youtube/youTubePlayer";
-import TimecodeEditor  from "./timecodeEditor";
+import YouTubePlayer from "./youtube/youTubePlayer";
+import TimecodeEditor from "./timecodeEditor";
 import VideoTimelineD3 from "../components/videoTimelineD3";
 
 export default function EditWindow({
@@ -25,8 +25,8 @@ export default function EditWindow({
     // Playback state for timeline
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
+    const [selectedClipId, setSelectedClipId] = useState<string | null>(null);
 
-    // Poll player time (simple + reliable)
     useEffect(() => {
         if (!player) return;
         let raf = 0;
@@ -36,7 +36,6 @@ export default function EditWindow({
             const t = Number(player.getCurrentTime?.() ?? 0);
             const d = Number(player.getDuration?.() ?? 0);
 
-            // reduce re-renders a bit
             if (Math.abs(t - last) > 0.05) {
                 setCurrentTime(t);
                 last = t;
@@ -82,13 +81,40 @@ export default function EditWindow({
         setDraftEnd(null);
     };
 
+    const deleteClip = (clipId: string) => {
+        if (!setManifestData) return;
+
+        setManifestData(prev => {
+            const current = prev.in_progress?.[0];
+            if (!current) return prev;
+
+            const clips = (current.clips ?? []).filter(c => c.id !== clipId);
+
+            return {
+                ...prev,
+                in_progress: [{ ...current, clips }, ...(prev.in_progress?.slice(1) ?? [])],
+            };
+        });
+
+        setSelectedClipId(prev => (prev === clipId ? null : prev));
+    };
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (!selectedClipId) return;
+            if (e.key === "Backspace" || e.key === "Delete") {
+                e.preventDefault();
+                deleteClip(selectedClipId);
+            }
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [selectedClipId]);
+
     return (
         <Container sx={[mode === "DEBUG" && { border: "3px solid blue", borderRadius: 1 }, { height: "100%", display: "flex", flexDirection: "column", minHeight: 0 }]}>
             <Box sx={{ mt: 2 }}>
-                <Typography variant="h4" gutterBottom>
-                    Edit Window
-                </Typography>
-
+                {/* Video Player area */}
                 <Box sx={{ width: "100%", aspectRatio: "16 / 9", bgcolor: "black", borderRadius: 2, overflow: "hidden" }}>
                     {video?.videoId ? (
                         <YouTubePlayer videoId={video.videoId} onPlayerReady={setPlayer} />
@@ -98,7 +124,7 @@ export default function EditWindow({
                         </Box>
                     )}
                 </Box>
-
+                 {/* Timeline area */}
                 <Box sx={{ mt: 1.5 }}>
                     <VideoTimelineD3
                         duration={duration}
@@ -106,7 +132,10 @@ export default function EditWindow({
                         start={draftStart}
                         end={draftEnd}
                         savedClips={video?.clips ?? []}
+                        selectedClipId={selectedClipId}
+                        onSelectClip={setSelectedClipId}
                         onSeek={(t) => player?.seekTo?.(t, true)}
+                        onDeleteClip={deleteClip}
                         height={70}
                     />
                 </Box>
@@ -118,7 +147,6 @@ export default function EditWindow({
                     player={player}
                     video={video}
                     onSaveClip={saveClipToManifest}
-                    // 👇 Add these two optional props to TimecodeEditor (small tweak)
                     onDraftStartChange={setDraftStart}
                     onDraftEndChange={setDraftEnd}
                 />

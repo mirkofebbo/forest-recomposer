@@ -33,36 +33,10 @@ export default function TimecodeEditor({
     const [end, setEnd] = useState<number | null>(null);
     const [note, setNote] = useState("");
     const [tags, setTags] = useState<TagList[]>(["OTHER"]);
-    const [markMode, setMarkMode] = useState<"start" | "end">("start");
 
     const canUse = Boolean(player && video?.videoId);
 
     const now = () => (player ? Number(player.getCurrentTime?.() ?? 0) : 0);
-
-    const mark = () => {
-        if (!player) return;
-        const t = Number(player.getCurrentTime?.() ?? 0);
-
-        if (markMode === "start") {
-            setStart(t);
-            onDraftStartChange?.(t);
-            setMarkMode("end");
-        } else {
-            setEnd(t);
-            onDraftEndChange?.(t);
-            setMarkMode("start");
-        }
-    };
-    const setStartNow = () => {
-        const t = now();
-        setStart(t);
-        onDraftStartChange?.(t);
-    };
-    const setEndNow = () => {
-        const t = now();
-        setEnd(t);
-        onDraftEndChange?.(t);
-    };
 
     const swapIfNeeded = (a: number, b: number) => (a <= b ? [a, b] : [b, a]);
 
@@ -100,13 +74,21 @@ export default function TimecodeEditor({
 
     return (
         <Box sx={{ display: "grid", gap: 1.25 }}>
-            <Typography variant="h6">Timecode Edit Window</Typography>
-
+            {/* Timecode edit window */}
+            {/* General Control area */}
             <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
-                <Button variant="contained" disabled={!canUse} onClick={setStartNow}>
+                <Button variant="contained" disabled={!canUse} onClick={() => {
+                    const t = now();
+                    setStart(t);
+                    onDraftStartChange?.(t);
+                }}>
                     Set Start
                 </Button>
-                <Button variant="contained" disabled={!canUse} onClick={setEndNow}>
+                <Button variant="contained" disabled={!canUse} onClick={() => {
+                    const t = now();
+                    setEnd(t);
+                    onDraftEndChange?.(t);
+                }}>
                     Set End
                 </Button>
                 <Button
@@ -126,6 +108,7 @@ export default function TimecodeEditor({
             </Box>
 
             <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center" }}>
+                {/* Tags Option */}
                 <FormControl size="small" sx={{ minWidth: 260 }} disabled={!canUse}>
                     <InputLabel id="clip-tags-label">Tags</InputLabel>
                     <Select<TagList[]>
@@ -147,13 +130,13 @@ export default function TimecodeEditor({
                         ))}
                     </Select>
                 </FormControl>
-
+                {/* Start and stop timecode */}
                 <Box sx={{ opacity: canUse ? 1 : 0.7 }}>
                     <strong>Start:</strong> {start == null ? "—" : `${fmt(start)} (${start.toFixed(2)}s)`}{" "}
                     <strong style={{ marginLeft: 12 }}>End:</strong> {end == null ? "END" : `${fmt(end)} (${end.toFixed(2)}s)`}
                 </Box>
             </Box>
-
+            {/* Notes Option */}
             <TextField
                 size="small"
                 label="Note (optional)"

@@ -7,12 +7,15 @@ function clamp(n: number, a: number, b: number) {
 }
 
 type Props = {
-    duration: number;              // seconds
-    currentTime: number;           // seconds
-    start: number | null;          // seconds
-    end: number | null;            // seconds (null = END)
-    savedClips?: Clip[];           // optional: show previous clips
-    onSeek?: (t: number) => void;  // click timeline -> seek
+    duration: number;
+    currentTime: number;
+    start: number | null;
+    end: number | null;
+    savedClips?: Clip[];
+    selectedClipId: string | null;
+    onSelectClip?: (id: string | null) => void;
+    onSeek?: (t: number) => void;
+    onDeleteClip?: (id: string) => void;
     height?: number;
 };
 
@@ -22,17 +25,16 @@ export default function VideoTimelineD3({
     start,
     end,
     savedClips = [],
+    selectedClipId,
+    onSelectClip,
     onSeek,
+    onDeleteClip,
     height = 64,
 }: Props) {
     const svgRef = useRef<SVGSVGElement | null>(null);
-
+    
     const fmt = useMemo(() => d3.timeFormat("%M:%S"), []);
-    const fmtTime = (t: number) => {
-        // Use a time formatter by mapping seconds to a Date offset
-        // (works fine for videos under 1h; if longer, we can add hh:mm:ss later)
-        return fmt(new Date(t * 1000));
-    };
+    const fmtTime = (t: number) => fmt(new Date(t * 1000));
 
     useEffect(() => {
         const svgEl = svgRef.current;
@@ -47,6 +49,7 @@ export default function VideoTimelineD3({
         const ct = clamp(currentTime || 0, 0, dur);
 
         const x = d3.scaleLinear().domain([0, dur]).range([0, innerW]);
+        const xInv = (px: number) => clamp(x.invert(px), 0, dur);
 
         const svg = d3.select(svgEl);
         svg.selectAll("*").remove();
@@ -58,7 +61,14 @@ export default function VideoTimelineD3({
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
 
-        // Background track
+        const gNode = g.node() as SVGGElement;
+
+        const pointerX = (evt: any) => {
+            const [px] = d3.pointer(evt, gNode);
+            return clamp(px, 0, innerW);
+        };
+        const pointerTime = (evt: any) => xInv(pointerX(evt));
+
         g.append("rect")
             .attr("x", 0)
             .attr("y", innerH / 2 - 6)
@@ -67,26 +77,6 @@ export default function VideoTimelineD3({
             .attr("rx", 6)
             .attr("fill", "#e6e6e6");
 
-        // Saved clips (ranges)
-        if (savedClips.length) {
-            g.append("g")
-                .selectAll("rect")
-                .data(savedClips)
-                .enter()
-                .append("rect")
-                .attr("x", (d) => x(clamp(d.start, 0, dur)))
-                .attr("y", innerH / 2 - 9)
-                .attr("width", (d) => {
-                    const e = d.end == null ? dur : d.end;
-                    return Math.max(1, x(clamp(e, 0, dur)) - x(clamp(d.start, 0, dur)));
-                })
-                .attr("height", 18)
-                .attr("rx", 6)
-                .attr("fill", "#bdbdbd")
-                .attr("opacity", 0.35);
-        }
-
-        // Current clip (start..end) highlight
         if (start != null) {
             const s = clamp(start, 0, dur);
             const e = clamp(end == null ? dur : end, 0, dur);
@@ -99,10 +89,98 @@ export default function VideoTimelineD3({
                 .attr("height", 20)
                 .attr("rx", 6)
                 .attr("fill", "#9e9e9e")
-                .attr("opacity", 0.55);
+                .attr("opacity", 0.35);
         }
 
-        // Start marker
+        g.append("rect")
+            .attr("x", 0)
+            .attr("y", innerH / 2 - 18)
+            .attr("width", innerW)
+            .attr("height", 36)
+            .attr("fill", "transparent")
+            .style("cursor", "pointer")
+            .on("click", (event) => {
+                onSelectClip?.(null);
+                if (!onSeek) return;
+                const t = pointerTime(event);
+                onSeek(t);
+            });
+
+        const clipG = g.append("g");
+
+        const norm = (c: Clip) => {
+            const s = clamp(c.start ?? 0, 0, dur);
+            const eRaw = c.end == null ? dur : c.end;
+            const e = clamp(eRaw, 0, dur);
+            return s <= e ? { s, e } : { s: e, e: s };
+        };
+
+        const groups = clipG
+            .selectAll("g.clip")
+            .data(savedClips, (d: any) => d.id)
+            .enter()
+            .append("g")
+            .attr("class", "clip");
+
+        groups
+            .append("rect")
+            .attr("class", "clip-body")
+            .attr("x", (d) => x(norm(d).s))
+            .attr("y", innerH / 2 - 10)
+            .attr("width", (d) => Math.max(2, x(norm(d).e) - x(norm(d).s)))
+            .attr("height", 20)
+            .attr("rx", 6)
+            .attr("fill", (d) => (d.id === selectedClipId ? "#8c8c8c" : "#bdbdbd"))
+            .attr("opacity", 0.85)
+            .style("cursor", "pointer")
+            .on("pointerdown", (event) => event.stopPropagation())
+            .on("click", (event, d) => {
+                event.stopPropagation();
+                onSelectClip?.(d.id);
+            });
+
+
+        const selected = groups.filter((d) => d.id === selectedClipId);
+
+        selected
+            .append("circle")
+            .attr("cx", (d) => x(norm(d).e) + 12)
+            .attr("cy", innerH / 2)
+            .attr("r", 10)
+            .attr("fill", "#ff4444")
+            .attr("opacity", 0)
+            .style("cursor", "pointer")
+            .style("transition", "opacity 0.2s")
+            .on("pointerdown", (event) => event.stopPropagation())
+            .on("click", (event, d) => {
+                event.stopPropagation();
+                onDeleteClip?.(d.id);
+            });
+
+        selected
+            .append("text")
+            .attr("x", (d) => x(norm(d).e) + 12)
+            .attr("y", innerH / 2 + 4)
+            .attr("text-anchor", "middle")
+            .attr("font-size", 14)
+            .attr("fill", "#fff")
+            .style("cursor", "pointer")
+            .style("transition", "opacity 0.2s")
+            .style("opacity", 0)
+            .text("×")
+            .on("pointerdown", (event) => event.stopPropagation())
+            .on("click", (event, d) => {
+                event.stopPropagation();
+                onDeleteClip?.(d.id);
+            });
+
+        // Show delete button on hover
+        groups.on("mouseenter", function () {
+            d3.select(this).selectAll("circle, text").style("opacity", 1);
+        }).on("mouseleave", function () {
+            d3.select(this).selectAll("circle, text").style("opacity", 0);
+        });
+
         if (start != null) {
             g.append("line")
                 .attr("x1", x(clamp(start, 0, dur)))
@@ -112,8 +190,6 @@ export default function VideoTimelineD3({
                 .attr("stroke", "#424242")
                 .attr("stroke-width", 2);
         }
-
-        // End marker
         if (end != null) {
             g.append("line")
                 .attr("x1", x(clamp(end, 0, dur)))
@@ -125,8 +201,8 @@ export default function VideoTimelineD3({
                 .attr("stroke-dasharray", "4 3");
         }
 
-        // Playhead
         g.append("line")
+            .attr("class", "playhead-line")
             .attr("x1", x(ct))
             .attr("x2", x(ct))
             .attr("y1", innerH / 2 - 18)
@@ -135,13 +211,14 @@ export default function VideoTimelineD3({
             .attr("stroke-width", 2);
 
         g.append("circle")
+            .attr("class", "playhead-dot")
             .attr("cx", x(ct))
             .attr("cy", innerH / 2)
             .attr("r", 5)
             .attr("fill", "#111");
 
-        // Axis labels (just 0 and end, plus a current time label)
         g.append("text")
+            .attr("class", "playhead-label")
             .attr("x", 0)
             .attr("y", innerH + 14)
             .attr("font-size", 11)
@@ -163,22 +240,34 @@ export default function VideoTimelineD3({
             .attr("font-size", 11)
             .attr("fill", "#111")
             .text(fmtTime(ct));
+    }, [duration, start, end, savedClips, selectedClipId, onSeek, onDeleteClip, onSelectClip, height]);
+    useEffect(() => {
+        const svgEl = svgRef.current;
+        if (!svgEl) return;
 
-        // Click-to-seek interaction (transparent overlay)
-        g.append("rect")
-            .attr("x", 0)
-            .attr("y", innerH / 2 - 18)
-            .attr("width", innerW)
-            .attr("height", 36)
-            .attr("fill", "transparent")
-            .style("cursor", "pointer")
-            .on("click", (event) => {
-                if (!onSeek) return;
-                const [mx] = d3.pointer(event);
-                const t = x.invert(mx);
-                onSeek(clamp(t, 0, dur));
-            });
-    }, [duration, currentTime, start, end, savedClips, onSeek, height]);
+        const width = svgEl.clientWidth || 600;
+        const margin = { left: 12, right: 12 };
+        const innerW = width - margin.left - margin.right;
 
+        const dur = Math.max(0.001, duration || 0.001);
+        const ct = clamp(currentTime || 0, 0, dur);
+
+        const x = d3.scaleLinear().domain([0, dur]).range([0, innerW]);
+
+        const svg = d3.select(svgEl);
+        const g = svg.select("g"); // your translated root group
+
+        // Move playhead only
+        g.select<SVGLineElement>("line.playhead-line")
+            .attr("x1", x(ct))
+            .attr("x2", x(ct));
+
+        g.select<SVGCircleElement>("circle.playhead-dot")
+            .attr("cx", x(ct));
+
+        g.select<SVGTextElement>("text.playhead-label")
+            .attr("x", x(ct))
+            .text(fmtTime(ct));
+    }, [currentTime, duration]);
     return <svg ref={svgRef} />;
 }
