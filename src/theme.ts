@@ -6,7 +6,7 @@ import { createTheme } from '@mui/material/styles';
    FOREST COLOR TOKENS (GLOBAL)
    ====================================================== */
 
-const FOREST_GREEN_DARK = '#1F3D34';
+const FOREST_GREEN_DARK = '#3A5A40';
 const FOREST_GREEN_MAIN = '#2F5D50';
 const FOREST_GREEN_LIGHT = '#4F7F72';
 
@@ -14,7 +14,7 @@ const MOSS_GREEN_DARK = '#5B7F5A';
 const MOSS_GREEN_MAIN = '#7DA87B';
 const MOSS_GREEN_LIGHT = '#A6C7A4';
 
-const FOREST_BACKGROUND_DEFAULT = '#F2F6F3';
+const FOREST_BACKGROUND_DEFAULT = '#344E41';
 const FOREST_BACKGROUND_PAPER = '#FFFFFF';
 
 const BARK_TEXT_PRIMARY = '#24352D';

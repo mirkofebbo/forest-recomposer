@@ -86,7 +86,7 @@ export default function VideoPlayerModal({
         </Box>
 
         {/* Optional extra info */}
-        <Typography sx={{ mt: 1, fontSize: 14, opacity: 0.75 }}>
+        <Typography sx={{ mt: 1, fontSize: 14, opacity: 0.75}}>
           Video ID: {videoId ?? "none"}
         </Typography>
       </Box>
