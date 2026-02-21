@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Box } from "@mui/material";
 
 import EditListWindow from "./components/editListWindow";
@@ -10,7 +10,7 @@ import VideoPlayerModal from "./components/modal/videoPlayerModal";
 import manifest from "../public/manifest.json";
 import type { Manifest } from "./types";
 
-const MODE: string = "DEBUG";
+const MODE: string = "";
 const LEFT_PANE_WIDTH = "20%";
 const CENTER_PANE_WIDTH = "60%";
 const RIGHT_PANE_WIDTH = "20%";
@@ -30,21 +30,21 @@ export default function App() {
   return (
     <>
       <Box sx={{ display: "flex", flexDirection: "row", height: "100vh", width: "100vw" }}>
-        <Box sx={{ width: LEFT_PANE_WIDTH, height: "100%" }}>
+        <Box sx={{ width: LEFT_PANE_WIDTH, height: "100%", backgroundColor: "primary.dark", margin: 1, borderRadius: 2 }}>
           <EditListWindow mode={MODE} manifestData={manifestData} setManifestData={setManifestData} onOpenVideoModal={openVideo} />
         </Box>
 
         <Box sx={{ width: CENTER_PANE_WIDTH, height: "100%", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
-          <Box>
-            <VideoSearch mode={MODE} manifestData={manifestData} setManifestData={setManifestData} onOpenVideoModal={openVideo}/>
+          <Box sx={{ backgroundColor: "primary.dark", margin: 1, borderRadius: 2 }}>
+            <VideoSearch mode={MODE} manifestData={manifestData} setManifestData={setManifestData} onOpenVideoModal={openVideo} />
           </Box>
-          <Box sx={{ height: "100%" }}>
+          <Box sx={{ height: "100%", backgroundColor: "primary.dark", margin: 1, borderRadius: 2 }}>
             <EditWindow mode={MODE} manifestData={manifestData} setManifestData={setManifestData} />
           </Box>
 
         </Box>
 
-        <Box sx={{ width: RIGHT_PANE_WIDTH, height: "100%" }}>
+        <Box sx={{ width: RIGHT_PANE_WIDTH, height: "100%", backgroundColor: "primary.dark", margin: 1, borderRadius: 2 }}>
           <CompletedListWindow mode={MODE} />
         </Box>
       </Box>

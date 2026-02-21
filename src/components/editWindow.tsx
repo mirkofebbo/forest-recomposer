@@ -112,7 +112,7 @@ export default function EditWindow({
     }, [selectedClipId]);
 
     return (
-        <Container sx={[mode === "DEBUG" && { border: "3px solid blue", borderRadius: 1 }, { height: "100%", display: "flex", flexDirection: "column", minHeight: 0 }]}>
+        <Container sx={[mode === "DEBUG" && { border: "3px solid blue", borderRadius: 1 }, { height: "100%", display: "flex", flexDirection: "column"}]}>
             <Box sx={{ mt: 2 }}>
                 {/* Video Player area */}
                 <Box sx={{ width: "100%", aspectRatio: "16 / 9", bgcolor: "black", borderRadius: 2, overflow: "hidden" }}>

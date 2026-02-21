@@ -69,12 +69,13 @@ export default function VideoSearch({
   return (
     <>
       {/* Search input */}
-      <Container sx={[mode === "DEBUG" && { border: '3px solid green', borderRadius: 2 }, { height: "auto" }]}>
-        <Box component="form" onSubmit={onSearch} sx={{ display: "flex", gap: 1, marginTop: 2 }}>
+      <Container sx={[mode === "DEBUG" && { border: '3px solid green', borderRadius: 2 }]}>
+        <Box component="form" onSubmit={onSearch} sx={{ display: "flex", gap: 1, margin: 1 }}>
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search videos…"
+            sx={{ color: "text.secondary" }}
             style={{ flex: 1, padding: 10, fontSize: 16 }}
           />
           <Button type="submit" disabled={loading || !query.trim()} variant="contained">
@@ -93,11 +94,12 @@ export default function VideoSearch({
             left: 0,
             height: "100%",
             width: "100%",
-            bgcolor: "background.paper",
+            bgcolor: "primary.light",
             zIndex: 10,
             display: "flex",
             flexDirection: "column",
             boxShadow: 6,
+            borderRadius: 2,
           }}
         >
           {/* Header */}

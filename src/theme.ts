@@ -1,28 +1,35 @@
 //theme generated with the help of chatgpt 5.2
-
 import { createTheme } from '@mui/material/styles';
 
 /* ======================================================
    FOREST COLOR TOKENS (GLOBAL)
    ====================================================== */
 
-const FOREST_GREEN_DARK = '#1F3D34';
-const FOREST_GREEN_MAIN = '#2F5D50';
+const FOREST_GREEN_DARK = '#3A5A40';
+const FOREST_GREEN_MAIN = '#344E41';
 const FOREST_GREEN_LIGHT = '#4F7F72';
 
 const MOSS_GREEN_DARK = '#5B7F5A';
 const MOSS_GREEN_MAIN = '#7DA87B';
 const MOSS_GREEN_LIGHT = '#A6C7A4';
 
-const FOREST_BACKGROUND_DEFAULT = '#F2F6F3';
-const FOREST_BACKGROUND_PAPER = '#FFFFFF';
+const FOREST_BACKGROUND_DEFAULT = '#344E41';
+const FOREST_BACKGROUND_PAPER = '#A3B18A';
 
 const BARK_TEXT_PRIMARY = '#24352D';
-const BARK_TEXT_SECONDARY = '#4A5F55';
+const BARK_TEXT_SECONDARY = '#D6E2DB';
 
 const LEAF_SUCCESS = '#4CAF50';
 const EARTH_WARNING = '#C2A14D';
 const CLAY_ERROR = '#8B3A3A';
+
+const CONTAINED_BUTTON_BG = '#7DA87B';
+const CONTAINED_BUTTON_HOVER_BG = '#588157';
+const CONTAINED_BUTTON_TEXT = '#16211B';
+
+const OUTLINED_BUTTON_BORDER = '#16211B';
+const OUTLINED_BUTTON_HOVER_BG = '#4F7F72';
+const OUTLINED_BUTTON_TEXT = '#16211B';
 
 const FOREST_DIVIDER = '#D6E2DB';
 
@@ -99,14 +106,30 @@ const forestTheme = createTheme({
   components: {
     MuiButton: {
       styleOverrides: {
+
         root: {
           borderRadius: 24,
           paddingInline: 20,
-        },
-        containedPrimary: {
-          boxShadow: `0 6px 16px ${FOREST_GREEN_MAIN}40`,
+          "&.MuiButton-contained": {
+            backgroundColor: CONTAINED_BUTTON_BG,
+            color: CONTAINED_BUTTON_TEXT,
+            "&:hover": {
+              backgroundColor: CONTAINED_BUTTON_HOVER_BG,
+            },
+          },
+          "&.MuiButton-outlined": {
+            borderColor: OUTLINED_BUTTON_BORDER,
+            color: OUTLINED_BUTTON_TEXT,
+            "&:hover": {
+              backgroundColor: OUTLINED_BUTTON_HOVER_BG,
+            },
+          },
+          "&.Mui-disabled": {
+            opacity: 0.6,
+          },
         },
       },
+
     },
 
     MuiCard: {
