@@ -94,7 +94,7 @@ export default function VideoSearch({
             left: 0,
             height: "100%",
             width: "100%",
-            bgcolor: "background.paper",
+            bgcolor: "primary.light",
             zIndex: 10,
             display: "flex",
             flexDirection: "column",

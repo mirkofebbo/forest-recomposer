@@ -106,7 +106,7 @@ const forestTheme = createTheme({
           borderRadius: 24,
           paddingInline: 20,
           "&.MuiButton-contained": {
-            backgroundColor: CONTAINED_BUTTON_BG,
+            backgroundColor: MOSS_GREEN_MAIN,
             color: CONTAINED_BUTTON_TEXT,
             "&:hover": {
               backgroundColor: CONTAINED_BUTTON_HOVER_BG,
