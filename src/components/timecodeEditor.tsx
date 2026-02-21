@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Box, Button, TextField, FormControl, InputLabel, Select, MenuItem, OutlinedInput, Chip } from "@mui/material";
 import type { Clip, VideoItem, TagList } from "../types";
+import { color } from "d3";
 
 const TAG_OPTIONS: TagList[] = ["GREEN", "HUMAN", "WATER", "ANIMAL", "SUNLIGHT", "SOIL", "OTHER"];
 
@@ -72,7 +73,7 @@ export default function TimecodeEditor({
     };
 
     return (
-        <Box sx={{ display: "grid", gap: 1.25 }}>
+        <Box sx={{ display: "grid", gap: 1.25, backgroundColor: "background.paper", padding: 2, borderRadius: 2, opacity: canUse ? 1 : 0.7 }}>
             {/* Timecode edit window */}
             {/* General Control area */}
             <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
@@ -108,8 +109,8 @@ export default function TimecodeEditor({
 
             <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center" }}>
                 {/* Tags Option */}
-                <FormControl size="small" sx={{ minWidth: 260 }} disabled={!canUse}>
-                    <InputLabel id="clip-tags-label">Tags</InputLabel>
+                <FormControl size="small" sx={{ minWidth: 260 }} disabled={!canUse} focused>
+                    <InputLabel id="clip-tags-label" sx={{ color: "primary.dark" }}>Tags</InputLabel>
                     <Select<TagList[]>
                         labelId="clip-tags-label"
                         multiple
@@ -137,11 +138,13 @@ export default function TimecodeEditor({
             </Box>
             {/* Notes Option */}
             <TextField
-                size="small"
                 label="Note (optional)"
+                variant="outlined"
+                size="small"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 disabled={!canUse}
+                focused
             />
         </Box>
     );

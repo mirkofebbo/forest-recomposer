@@ -23,9 +23,14 @@ const LEAF_SUCCESS = '#4CAF50';
 const EARTH_WARNING = '#C2A14D';
 const CLAY_ERROR = '#8B3A3A';
 
-const CONTAINED_BUTTON_BG = '#A3B18A';
+const CONTAINED_BUTTON_BG = '#7DA87B';
 const CONTAINED_BUTTON_HOVER_BG = '#588157';
 const CONTAINED_BUTTON_TEXT = '#16211B';
+
+const OUTLINED_BUTTON_BORDER = '#16211B';
+const OUTLINED_BUTTON_HOVER_BG = '#4F7F72';
+const OUTLINED_BUTTON_TEXT = '#16211B';
+
 const FOREST_DIVIDER = '#D6E2DB';
 
 /* ======================================================
@@ -106,10 +111,17 @@ const forestTheme = createTheme({
           borderRadius: 24,
           paddingInline: 20,
           "&.MuiButton-contained": {
-            backgroundColor: MOSS_GREEN_MAIN,
+            backgroundColor: CONTAINED_BUTTON_BG,
             color: CONTAINED_BUTTON_TEXT,
             "&:hover": {
               backgroundColor: CONTAINED_BUTTON_HOVER_BG,
+            },
+          },
+          "&.MuiButton-outlined": {
+            borderColor: OUTLINED_BUTTON_BORDER,
+            color: OUTLINED_BUTTON_TEXT,
+            "&:hover": {
+              backgroundColor: OUTLINED_BUTTON_HOVER_BG,
             },
           },
           "&.Mui-disabled": {
