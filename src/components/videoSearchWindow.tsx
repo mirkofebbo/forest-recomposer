@@ -132,6 +132,7 @@ export default function VideoSearch({ mode, manifestData, setManifestData, onOpe
                 return (
                   <Card
                     key={`${vid}-${it.snippet.publishedAt}`}
+                    component="a"
                     href={href}
                     target="_blank"
                     rel="noreferrer"
@@ -141,6 +142,7 @@ export default function VideoSearch({ mode, manifestData, setManifestData, onOpe
                       height: "100%",
                       cursor: href ? "pointer" : "default",
                       opacity: href ? 1 : 0.6,
+                      textDecoration: "none",
                       "&:hover": {
                         boxShadow: href ? 3 : 1,
                       },
