@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Modal, Box, Typography, IconButton, Chip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import YouTubePlayer from "../youtube/youTubePlayer"; // adjust path if needed
@@ -126,7 +126,7 @@ export default function VideoPlayerModal({
         >
           {videoId ? (
             <YouTubePlayer
-              key={videoId}              // important: force rebuild when switching videos
+              key={videoId}             
               videoId={videoId}
               onPlayerReady={setPlayer}
             />

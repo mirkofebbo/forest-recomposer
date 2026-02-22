@@ -25,11 +25,38 @@ export default function App() {
     autoPlay?: boolean;
   }>({ open: false });
 
+  const [selectedClips, setSelectedClips] = useState<
+    { videoId: string; clipId: string; start: number; end: number | null; tags?: string[]; note?: string }[]
+  >([]);
+
   const openVideo = (videoId: string, start?: number, end?: number | null) =>
-    setVideoModal({ open: true, videoId, start, end, autoPlay: true });
+    setVideoModal({ open: true, videoId, start, end, autoPlay: true, loop: false, muted: false });
 
   const closeVideo = () =>
     setVideoModal({ open: false, videoId: undefined, start: undefined, end: undefined, autoPlay: false });
+
+  const addSelectedClip = (payload: any) => {
+    setSelectedClips((prev) => {
+      const exists = prev.some((p) => p.videoId === payload.videoId && p.clipId === payload.clipId);
+      return exists ? prev : [payload, ...prev];
+    });
+  };
+
+  const removeSelectedClip = (videoId: string, clipId: string) => {
+    setSelectedClips((prev) => prev.filter((p) => !(p.videoId === videoId && p.clipId === clipId)));
+  };
+
+  const deleteCompletedClip = (videoId: string, clipId: string) => {
+    setManifestData((prev) => {
+      const completed = (prev.completed ?? []).map((v) => {
+        if (v.videoId !== videoId) return v;
+        return { ...v, clips: (v.clips ?? []).filter((c) => c.id !== clipId) };
+      });
+      return { ...prev, completed };
+    });
+
+    removeSelectedClip(videoId, clipId);
+  };
 
   useEffect(() => {
     console.log("Manifest data updated:", manifestData);
@@ -75,6 +102,10 @@ export default function App() {
             setManifestData={setManifestData}
             onOpenVideoModal={openVideo}
             onResumeEdit={resumeEdit}
+            onDeleteClip={deleteCompletedClip}
+            onSelectClip={(videoId, clip) =>
+              addSelectedClip({ videoId, clipId: clip.id, start: clip.start, end: clip.end ?? null, tags: clip.tags, note: clip.note })
+            }
           />
         </Box>
       </Box>
