@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Container, Box } from "@mui/material";
 import type { Dispatch, SetStateAction } from "react";
-import type { Manifest, Clip } from "../types";
+import type { Manifest, VideoItem, Clip } from "../types";
 import YouTubePlayer from "./youtube/youTubePlayer";
 import TimecodeEditor from "./timecodeEditor";
 import VideoTimelineD3 from "../components/videoTimelineD3";
@@ -76,9 +76,50 @@ export default function EditWindow({
             };
         });
 
-        // reset markers after saving
         setDraftStart(null);
         setDraftEnd(null);
+        setSelectedClipId(null);
+    };
+
+    const finalizeVideo = async (videoItem: VideoItem) => {
+        try {
+            player?.stopVideo?.();
+        } catch { }
+
+        try {
+            player?.destroy?.();
+        } catch { }
+
+        setPlayer(null);            
+        setSelectedClipId(null);
+        setDraftStart(null);
+        setDraftEnd(null);
+
+        saveEditToManifestComplete(videoItem);
+    };
+    const saveEditToManifestComplete = (videoItem: VideoItem) => {
+        if (!setManifestData) return;
+
+        setManifestData((prev) => {
+            const completed = [videoItem, ...(prev.completed ?? [])];
+
+            // remove from in_progress 
+            const in_progress = (prev.in_progress ?? []).filter(
+                (v) => v.videoId !== videoItem.videoId
+            );
+
+            // remove from to_edit
+            const to_edit = (prev.to_edit ?? []).filter(
+                (v) => v.videoId !== videoItem.videoId
+            );
+
+            return {
+                ...prev,
+                completed,
+                in_progress,
+                to_edit,
+            };
+        });
     };
 
     const deleteClip = (clipId: string) => {
@@ -112,7 +153,7 @@ export default function EditWindow({
     }, [selectedClipId]);
 
     return (
-        <Container sx={[mode === "DEBUG" && { border: "3px solid blue", borderRadius: 1 }, { height: "100%", display: "flex", flexDirection: "column"}]}>
+        <Container sx={[mode === "DEBUG" && { border: "3px solid blue", borderRadius: 1 }, { height: "100%", display: "flex", flexDirection: "column" }]}>
             <Box sx={{ mt: 2 }}>
                 {/* Video Player area */}
                 <Box sx={{ width: "100%", aspectRatio: "16 / 9", bgcolor: "black", borderRadius: 2, overflow: "hidden" }}>
@@ -124,7 +165,7 @@ export default function EditWindow({
                         </Box>
                     )}
                 </Box>
-                 {/* Timeline area */}
+                {/* Timeline area */}
                 <Box sx={{ mt: 1.5 }}>
                     <VideoTimelineD3
                         duration={duration}
@@ -147,6 +188,7 @@ export default function EditWindow({
                     player={player}
                     video={video}
                     onSaveClip={saveClipToManifest}
+                    onSaveVideo={finalizeVideo}
                     onDraftStartChange={setDraftStart}
                     onDraftEndChange={setDraftEnd}
                 />

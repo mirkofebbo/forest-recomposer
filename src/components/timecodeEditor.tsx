@@ -13,19 +13,21 @@ function fmt(t: number) {
 }
 
 function makeId() {
-    return `clip_${Math.random().toString(16).slice(2)}_${Date.now()}`;
+    return `clip_${Math.random().toString(4).slice(2)}_${Date.now()}`;
 }
 
 export default function TimecodeEditor({
     player,
     video,
     onSaveClip,
+    onSaveVideo,
     onDraftStartChange,
     onDraftEndChange,
 }: {
     player: any | null;
     video: VideoItem | undefined;
     onSaveClip: (clip: Clip) => void;
+    onSaveVideo?: (videoItem: VideoItem) => void;
     onDraftStartChange?: (t: number | null) => void;
     onDraftEndChange?: (t: number | null) => void;
 }) {
@@ -35,6 +37,7 @@ export default function TimecodeEditor({
     const [tags, setTags] = useState<TagList[]>(["OTHER"]);
 
     const canUse = Boolean(player && video?.videoId);
+    const canSave = Boolean(canUse && (video?.clips?.length ?? 0) > 0);
 
     const now = () => (player ? Number(player.getCurrentTime?.() ?? 0) : 0);
 
@@ -71,6 +74,15 @@ export default function TimecodeEditor({
         setTags(["OTHER"]);
     };
 
+    const saveEditToManifestComplete = () => {
+        if (!video) return;
+        onSaveVideo?.(video);
+        setStart(null);
+        setEnd(null);
+        setNote("");
+        setTags(["OTHER"]);
+    };
+
     return (
         <Box sx={{ display: "grid", gap: 1.25, backgroundColor: "background.paper", padding: 2, borderRadius: 2, opacity: canUse ? 1 : 0.7 }}>
             {/* Timecode edit window */}
@@ -101,8 +113,11 @@ export default function TimecodeEditor({
                 >
                     Preview from Start
                 </Button>
-                <Button color="success" variant="contained" disabled={!canUse || start == null} onClick={save}>
+                <Button color="success" variant="contained" disabled={!canUse || end == null} onClick={save}>
                     Save Clip
+                </Button>
+                <Button color="success" variant="contained" disabled={!canSave} onClick={() => saveEditToManifestComplete()}>
+                    Save Video
                 </Button>
             </Box>
 

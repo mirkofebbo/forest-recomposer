@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { Container, Typography, Box, CardContent, Card, CardMedia } from '@mui/material';
 import type { Manifest } from "../types";
@@ -16,11 +16,7 @@ export default function EditListWindow({ mode, manifestData, setManifestData, on
     const [showInfo, setShowInfo] = useState<boolean>(false);
 
     const toEdit = manifestData?.to_edit ?? [];
-
-    useEffect(() => {
-        console.log("EditListWindow  updated:", manifestData);
-    }, [manifestData]);
-
+    
     return (
         <Container
             maxWidth={false}
