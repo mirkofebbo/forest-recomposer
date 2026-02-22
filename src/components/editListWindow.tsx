@@ -16,7 +16,7 @@ export default function EditListWindow({ mode, manifestData, setManifestData, on
     const [showInfo, setShowInfo] = useState<boolean>(false);
 
     const toEdit = manifestData?.to_edit ?? [];
-    
+
     return (
         <Container
             maxWidth={false}
@@ -32,11 +32,11 @@ export default function EditListWindow({ mode, manifestData, setManifestData, on
             ]}
         >
             {/* Edit List Window */}
-
+            <Typography variant="h4" gutterBottom>
+                To Edit List
+            </Typography>
             {toEdit.length === 0 ? (
-                <Box sx={{ opacity: 0.7 }}>
-                    No videos in <code>to_edit</code> yet.
-                </Box>
+                <Box sx={{ opacity: 0.7 }}>No video selected yet.</Box>
             ) : (
                 <Box
                     sx={{
