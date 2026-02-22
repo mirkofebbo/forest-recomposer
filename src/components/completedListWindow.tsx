@@ -1,18 +1,12 @@
-import React, { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { Container, Typography, Box, Card, CardMedia, Chip } from "@mui/material";
+import { Container, Typography, Box, Card, CardMedia, Chip, IconButton, Tooltip } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import type { Manifest, Clip } from "../types";
 
-function fmtSec(t: number) {
-    const s = Math.floor(t % 60);
-    const m = Math.floor((t / 60) % 60);
-    const h = Math.floor(t / 3600);
-    const pad = (n: number) => String(n).padStart(2, "0");
-    return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
-}
-function clipRangeLabel(start: number, end: number | null | undefined) {
-    return `${fmtSec(start)} → ${end == null ? "END" : fmtSec(end)}`;
-}
+
 function ytThumb(videoId: string) {
     return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 }
@@ -23,25 +17,23 @@ export default function CompletedListWindow({
     setManifestData,
     onOpenVideoModal,
     onResumeEdit,
+    onDeleteClip,
+    onSelectClip,
 }: {
     mode?: string;
     manifestData?: Manifest;
     setManifestData?: Dispatch<SetStateAction<Manifest>>;
     onOpenVideoModal: (videoId: string, start?: number, end?: number | null) => void;
     onResumeEdit: (videoId: string) => void;
+    onDeleteClip: (videoId: string, clipId: string) => void;
+    onSelectClip: (videoId: string, clip: Clip) => void;
 }) {
     const completed = manifestData?.completed ?? [];
+
     const sorted = useMemo(
         () => [...completed].sort((a, b) => (b.clips?.length ?? 0) - (a.clips?.length ?? 0)),
         [completed]
     );
-
-    // debounce hover preview so it feels intentional
-    const hoverTimer = useRef<number | null>(null);
-    const clearHoverTimer = () => {
-        if (hoverTimer.current) window.clearTimeout(hoverTimer.current);
-        hoverTimer.current = null;
-    };
 
     return (
         <Container
@@ -59,14 +51,7 @@ export default function CompletedListWindow({
                 <Box sx={{ opacity: 0.7 }}>No completed videos yet.</Box>
             ) : (
                 <Box sx={{ flex: 1, minHeight: 0, overflow: "auto", pr: 0.5 }}>
-                    <Box
-                        sx={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                            gap: 1.25,
-                            alignContent: "start",
-                        }}
-                    >
+                    <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 1.25 }}>
                         {sorted.map((video) => {
                             const vid = video.videoId ?? "";
                             const clips = video.clips ?? [];
@@ -74,9 +59,11 @@ export default function CompletedListWindow({
 
                             return (
                                 <Card key={vid} sx={{ p: 1 }}>
-                                    {/* top row: thumbnail + title */}
+                                    {/* Video header */}
                                     <Box sx={{ display: "grid", gridTemplateColumns: "96px 1fr", gap: 1 }}>
+                                        {/* Thumbnail*/}
                                         <Box
+                                            onClick={() => vid && onResumeEdit(vid)}
                                             sx={{
                                                 borderRadius: 1.5,
                                                 overflow: "hidden",
@@ -86,74 +73,96 @@ export default function CompletedListWindow({
                                                 "&:hover": { transform: "translateY(-1px)" },
                                             }}
                                             title="Send back to Edit Window"
-                                            onClick={() => vid && onResumeEdit(vid)}
                                         >
-                                            <CardMedia
-                                                component="img"
-                                                image={thumb}
-                                                alt={video.title ?? ""}
-                                                sx={{ aspectRatio: "16 / 9", display: thumb ? "block" : "none" }}
-                                            />
-                                            {!thumb && (
-                                                <Box sx={{ aspectRatio: "16 / 9", bgcolor: "action.hover" }} />
-                                            )}
+                                            <CardMedia component="img" image={thumb} alt={video.title ?? ""} sx={{ aspectRatio: "16 / 9" }} />
                                         </Box>
 
                                         <Box sx={{ minWidth: 0 }}>
                                             <Typography sx={{ fontWeight: 800, lineHeight: 1.15 }} noWrap>
                                                 {video.title ?? "Untitled video"}
                                             </Typography>
-                                            <Box sx={{ mt: 0.5, display: "flex", gap: 1, flexWrap: "wrap" }}>
+
+                                            <Box sx={{ mt: 0.75, display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}>
                                                 <Chip size="small" label={`${clips.length} clip${clips.length === 1 ? "" : "s"}`} />
+                                                <Tooltip title="Play full video">
+                                                    <Chip
+                                                        size="small"
+                                                        icon={<PlayArrowIcon />}
+                                                        label="Play"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onOpenVideoModal(vid);
+                                                        }}
+                                                        sx={{ cursor: "pointer" }}
+                                                    />
+                                                </Tooltip>
                                             </Box>
                                         </Box>
                                     </Box>
 
-                                    {/* clips grid (smaller tiles) */}
-                                    <Box
-                                        sx={{
-                                            mt: 1,
-                                            display: "grid",
-                                            gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
-                                            gap: 0.75,
-                                        }}
-                                    >
+                                    {/* Clip list */}
+                                    <Box marginTop={1}>
                                         {clips.map((clip) => (
                                             <Box
                                                 key={clip.id}
-                                                onMouseEnter={() => {
-                                                    clearHoverTimer();
-                                                    hoverTimer.current = window.setTimeout(() => {
-                                                        // hover preview: open modal at start/end
-                                                        onOpenVideoModal(vid, clip.start, clip.end ?? null);
-                                                    }, 250);
-                                                }}
-                                                onMouseLeave={clearHoverTimer}
                                                 onClick={() => onOpenVideoModal(vid, clip.start, clip.end ?? null)}
                                                 sx={{
+                                                    position: "relative",
                                                     borderRadius: 1.5,
-                                                    p: 0.75,
+                                                    px: 1,
+                                                    py: 0.85,
                                                     cursor: "pointer",
                                                     border: "1px solid",
-                                                    borderColor: "divider",
-                                                    bgcolor: "background.default",
-                                                    "&:hover": {
-                                                        transform: "translateY(-1px)",
-                                                        boxShadow: 2,
-                                                    },
+                                                    // borderColor: "divider",
+                                                    bgcolor: "primary.light",
+                                                    "&:hover": { boxShadow: 2, transform: "translateY(-1px)" },
                                                 }}
-                                                title="Click to open clip in modal"
+                                                marginTop={0.5}
+                                                title="Open clip in modal"
                                             >
-                                                <Box sx={{ fontSize: 12, fontWeight: 800 }}>
-                                                    {clipRangeLabel(clip.start, clip.end)}
+                                                {/* top-right controls */}
+                                                <Box sx={{ position: "absolute", top: 2, right: 2, display: "flex", gap: 0.25 }}>
+                                                    {/* + select */}
+                                                    <Tooltip title="Select for next part">
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onSelectClip(vid, clip);
+                                                            }}
+                                                            sx={{ "&:hover": { boxShadow: 2, backgroundColor: "success.light" }, }}
+                                                        >
+                                                            <AddIcon fontSize="inherit" />
+                                                        </IconButton>
+                                                    </Tooltip>
+
+                                                    {/*delete */}
+                                                    <Tooltip title="Delete clip">
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onDeleteClip(vid, clip.id);
+                                                            }}
+                                                            sx={{ "&:hover": { boxShadow: 2, backgroundColor: "error.light" }, }}
+                                                        >
+                                                            <CloseIcon fontSize="inherit" />
+                                                        </IconButton>
+                                                    </Tooltip>
                                                 </Box>
 
-                                                {/* optional: show only 1 tag */}
-                                                {(clip.tags?.[0] ?? null) && (
-                                                    <Box sx={{ mt: 0.5 }}>
-                                                        <Chip size="small" label={clip.tags![0]} />
-                                                    </Box>
-                                                )}
+                                                {/* label */}
+                                                <Box sx={{ fontSize: 12, fontWeight: 800, pr: 7 }}>
+                                                    {clip.tags?.length ? (
+                                                        <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+                                                            {clip.tags.map((t) => (
+                                                                <Chip key={t} size="small" label={t} sx={{ fontSize: 10, backgroundColor: "secondary.light" }} />
+                                                            ))}
+                                                        </Box>
+                                                    ) : (
+                                                        <Typography>{clip.note || "No tags or note"}</Typography>
+                                                    )}
+                                                </Box>
                                             </Box>
                                         ))}
                                     </Box>
