@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { Container, Typography, Box, CardContent, Card, CardMedia } from '@mui/material';
 import type { Manifest } from "../types";

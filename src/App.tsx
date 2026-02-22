@@ -45,7 +45,7 @@ export default function App() {
         </Box>
 
         <Box sx={{ width: RIGHT_PANE_WIDTH, height: "100%", backgroundColor: "primary.dark", margin: 1, borderRadius: 2 }}>
-          <CompletedListWindow mode={MODE} />
+          <CompletedListWindow mode={MODE} manifestData={manifestData} setManifestData={setManifestData}  />
         </Box>
       </Box>
       <VideoPlayerModal open={videoModal.open} videoId={videoModal.videoId} onClose={closeVideo} />
