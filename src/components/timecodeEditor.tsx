@@ -13,19 +13,21 @@ function fmt(t: number) {
 }
 
 function makeId() {
-    return `clip_${Math.random().toString(16).slice(2)}_${Date.now()}`;
+    return `clip_${Math.random().toString(4).slice(2)}_${Date.now()}`;
 }
 
 export default function TimecodeEditor({
     player,
     video,
     onSaveClip,
+    onSaveVideo,
     onDraftStartChange,
     onDraftEndChange,
 }: {
     player: any | null;
     video: VideoItem | undefined;
     onSaveClip: (clip: Clip) => void;
+    onSaveVideo?: (videoItem: VideoItem) => void;
     onDraftStartChange?: (t: number | null) => void;
     onDraftEndChange?: (t: number | null) => void;
 }) {

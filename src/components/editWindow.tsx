@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Container, Box } from "@mui/material";
 import type { Dispatch, SetStateAction } from "react";
-import type { Manifest, Clip } from "../types";
+import type { Manifest, VideoItem, Clip } from "../types";
 import YouTubePlayer from "./youtube/youTubePlayer";
 import TimecodeEditor from "./timecodeEditor";
 import VideoTimelineD3 from "../components/videoTimelineD3";
@@ -81,6 +81,20 @@ export default function EditWindow({
         setDraftEnd(null);
     };
 
+    const saveEditToManifestComplete = (videoItem: VideoItem) => {
+        if (!setManifestData) return;
+
+        setManifestData(prev => {
+            const current = prev.in_progress?.[0];
+            if (!current || current.videoId !== videoItem.videoId) return prev;
+
+            return {
+                ...prev,
+                in_progress: [videoItem, ...(prev.in_progress?.slice(1) ?? [])],
+            };
+        });
+    };
+
     const deleteClip = (clipId: string) => {
         if (!setManifestData) return;
 
@@ -147,6 +161,7 @@ export default function EditWindow({
                     player={player}
                     video={video}
                     onSaveClip={saveClipToManifest}
+                    onSaveVideo={saveEditToManifestComplete}
                     onDraftStartChange={setDraftStart}
                     onDraftEndChange={setDraftEnd}
                 />

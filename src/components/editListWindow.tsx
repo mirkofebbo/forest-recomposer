@@ -16,11 +16,7 @@ export default function EditListWindow({ mode, manifestData, setManifestData, on
     const [showInfo, setShowInfo] = useState<boolean>(false);
 
     const toEdit = manifestData?.to_edit ?? [];
-
-    useEffect(() => {
-        console.log("EditListWindow  updated:", manifestData);
-    }, [manifestData]);
-
+    
     return (
         <Container
             maxWidth={false}
