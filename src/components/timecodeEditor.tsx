@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Box, Button, TextField, FormControl, InputLabel, Select, MenuItem, OutlinedInput, Chip } from "@mui/material";
 import type { Clip, VideoItem, TagList } from "../types";
-import { color } from "d3";
 
 const TAG_OPTIONS: TagList[] = ["GREEN", "HUMAN", "WATER", "ANIMAL", "SUNLIGHT", "SOIL", "OTHER"];
 

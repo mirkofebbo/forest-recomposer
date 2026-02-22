@@ -79,7 +79,7 @@ export default function VideoTimelineD3({
             .attr("width", innerW)
             .attr("height", 12)
             .attr("rx", 6)
-            .attr("fill", "#e6e6e6");
+            .attr("fill", "#A6C7A4");
 
         // Draft clip area
         if (start != null) {
@@ -93,7 +93,7 @@ export default function VideoTimelineD3({
                 .attr("width", Math.max(1, x(b) - x(a)))
                 .attr("height", 20)
                 .attr("rx", 6)
-                .attr("fill", "#9e9e9e")
+                .attr("fill", "#7DA87B")
                 .attr("opacity", 0.35);
         }
         // Clickable area for seeking
@@ -137,8 +137,8 @@ export default function VideoTimelineD3({
             .attr("width", (d) => Math.max(2, x(norm(d).e) - x(norm(d).s)))
             .attr("height", 20)
             .attr("rx", 6)
-            .attr("fill", (d) => (d.id === selectedClipId ? "#8c8c8c" : "#bdbdbd"))
-            .attr("opacity", 0.85)
+            .attr("fill", (d) => (d.id === selectedClipId ? "#A6C7A4" : "#4F7F72"))
+            .attr("opacity", 0.75)
             .style("cursor", "pointer")
             .on("pointerdown", (event) => event.stopPropagation())
             .on("click", (event, d) => {
@@ -230,7 +230,7 @@ export default function VideoTimelineD3({
             .attr("x", 0)
             .attr("y", innerH + 14)
             .attr("font-size", 11)
-            .attr("fill", "#333")
+            .attr("fill", "#D6E2DB")
             .text("0:00");
 
         g.append("text")
@@ -238,7 +238,7 @@ export default function VideoTimelineD3({
             .attr("y", innerH + 14)
             .attr("text-anchor", "end")
             .attr("font-size", 11)
-            .attr("fill", "#333")
+            .attr("fill", "#D6E2DB")
             .text(fmtTime(dur));
 
         g.append("text")
@@ -246,7 +246,7 @@ export default function VideoTimelineD3({
             .attr("y", -2)
             .attr("text-anchor", "middle")
             .attr("font-size", 11)
-            .attr("fill", "#111")
+            .attr("fill", "#D6E2DB")
             .text(fmtTime(ct));
     }, [duration, start, end, savedClips, selectedClipId, onSeek, onDeleteClip, onSelectClip, height]);
 
