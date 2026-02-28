@@ -9,5 +9,108 @@
         }
     ],
     "in_progress": [],
-    "completed": []
+    "completed": [
+        {
+            "videoId": "HFO7lnxtKuY",
+            "title": "The Forest | Short Cinematic Drone Footage | Poland",
+            "channelTitle": "Drolot",
+            "thumbnailUrl": "https://i.ytimg.com/vi/HFO7lnxtKuY/mqdefault.jpg",
+            "publishedAt": "2021-05-18T15:12:08Z",
+            "clips": [
+                {
+                    "id": "clip_31232211000230220123223031_1772282559826",
+                    "start": 19.74,
+                    "end": 38.5,
+                    "tags": [
+                        "OTHER"
+                    ],
+                    "note": ""
+                },
+                {
+                    "id": "clip_013232131010002033222111212_1772282581908",
+                    "start": 54.26,
+                    "end": 56.89,
+                    "tags": [
+                        "GREEN"
+                    ],
+                    "note": ""
+                },
+                {
+                    "id": "clip_02122210030020210002310312_1772282590293",
+                    "start": 64.4,
+                    "end": 69.82,
+                    "tags": [
+                        "GREEN"
+                    ],
+                    "note": ""
+                }
+            ]
+        },
+        {
+            "videoId": "LQuLAbG62vY",
+            "title": "Switzerland 4K - Cinematic FPV Relaxation Film with Calming Music",
+            "channelTitle": "Scenic Relaxation",
+            "publishedAt": "2021-01-16T19:15:00Z",
+            "thumbnailUrl": "https://i.ytimg.com/vi/LQuLAbG62vY/mqdefault.jpg",
+            "clips": [
+                {
+                    "id": "clip_330023122210011303001030212_1772283551791",
+                    "start": 247.35,
+                    "end": 284.04,
+                    "tags": [
+                        "SUNLIGHT"
+                    ],
+                    "note": ""
+                },
+                {
+                    "id": "clip_111002003023011102032011002_1772283578252",
+                    "start": 518.76,
+                    "end": 643.87,
+                    "tags": [],
+                    "note": "MOUNTAIN"
+                },
+                {
+                    "id": "clip_22301311011222020233223302_1772283657870",
+                    "start": 1369.78,
+                    "end": 1395.07,
+                    "tags": [],
+                    "note": "HUMAN"
+                }
+            ]
+        }
+    ],
+    "recompose": [
+        {
+            "clips": [
+                {
+                    "videoId": "LQuLAbG62vY",
+                    "title": "Switzerland 4K - Cinematic FPV Relaxation Film with Calming Music",
+                    "channelTitle": "Scenic Relaxation",
+                    "publishedAt": "2021-01-16T19:15:00Z",
+                    "thumbnailUrl": "https://i.ytimg.com/vi/LQuLAbG62vY/mqdefault.jpg",
+                    "id": "clip_31232211000230220123223031_1772282559826",
+                    "start": 19.74,
+                    "end": 38.5,
+                    "tags": [
+                        "OTHER"
+                    ],
+                    "note": ""
+                },
+                {
+                    "videoId": "LQuLAbG62vY",
+                    "title": "Switzerland 4K - Cinematic FPV Relaxation Film with Calming Music",
+                    "channelTitle": "Scenic Relaxation",
+                    "publishedAt": "2021-01-16T19:15:00Z",
+                    "thumbnailUrl": "https://i.ytimg.com/vi/LQuLAbG62vY/mqdefault.jpg",
+                    "id": "clip_013232131010002033222111212_1772282581908",
+                    "start": 54.26,
+                    "end": 56.89,
+                    "tags": [
+                        "GREEN"
+                    ],
+                    "note": ""
+                }
+            ]
+        }
+    ]
 }

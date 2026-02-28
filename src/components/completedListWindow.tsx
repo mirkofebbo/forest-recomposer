@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { Container, Typography, Box, Card, CardMedia, Chip, IconButton, Tooltip } from "@mui/material";
+import { Container, Typography, Box, Card, CardMedia, Chip, IconButton, Tooltip, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -44,7 +44,7 @@ export default function CompletedListWindow({
             ]}
         >
             <Typography variant="h4" gutterBottom>
-                Completed
+                To Recompose
             </Typography>
 
             {sorted.length === 0 ? (
@@ -172,6 +172,9 @@ export default function CompletedListWindow({
                     </Box>
                 </Box>
             )}
+            <Button variant="contained" disabled={sorted.length === 0} sx={{ mt: "auto" }}>
+                Ready to recompose? 
+            </Button>
         </Container>
     );
 }

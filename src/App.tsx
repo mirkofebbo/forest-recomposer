@@ -8,7 +8,7 @@ import EditWindow from "./components/editWindow";
 import VideoPlayerModal from "./components/modal/videoPlayerModal";
 
 import manifest from "../public/manifest.json";
-import type { Manifest } from "./types";
+import type { Manifest, RecomposeItem } from "./types";
 
 const MODE: string = "";
 const LEFT_PANE_WIDTH = "20%";
@@ -35,10 +35,43 @@ export default function App() {
   const closeVideo = () =>
     setVideoModal({ open: false, videoId: undefined, start: undefined, end: undefined, autoPlay: false });
 
-  const addSelectedClip = (payload: any) => {
+  const addSelectedClip = (payload: {
+    videoId: string;
+    clipId: string;
+    start: number;
+    end: number | null;
+    tags?: string[];
+    note?: string;
+  }) => {
     setSelectedClips((prev) => {
       const exists = prev.some((p) => p.videoId === payload.videoId && p.clipId === payload.clipId);
       return exists ? prev : [payload, ...prev];
+    });
+
+    setManifestData((prev) => {
+      const recompose = prev.recompose ?? [];
+      const exists = recompose.some((p) => p.videoId === payload.videoId && p.clipId === payload.clipId);
+      if (exists) return prev;
+
+      const sourceVideo =
+        (prev.completed ?? []).find((v) => v.videoId === payload.videoId) ??
+        (prev.in_progress ?? []).find((v) => v.videoId === payload.videoId) ??
+        (prev.to_edit ?? []).find((v) => v.videoId === payload.videoId);
+
+      const newItem: RecomposeItem = {
+        videoId: payload.videoId,
+        clipId: payload.clipId,
+        title: sourceVideo?.title ?? "",
+        channelTitle: sourceVideo?.channelTitle ?? "",
+        publishedAt: sourceVideo?.publishedAt ?? "",
+        thumbnailUrl: sourceVideo?.thumbnailUrl ?? "",
+        start: payload.start,
+        end: payload.end ?? null,
+        tags: payload.tags,
+        note: payload.note,
+      };
+
+      return { ...prev, recompose: [newItem, ...recompose] };
     });
   };
 

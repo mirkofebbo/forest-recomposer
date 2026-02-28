@@ -1,0 +1,1 @@
+// window to recompose clips from the completed list 
