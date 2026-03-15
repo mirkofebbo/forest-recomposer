@@ -1,5 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as d3 from "d3";
+
+function clamp(n: number, a: number, b: number) {
+    return Math.max(a, Math.min(b, n));
+}
 
 export type RecomposeItemInfo = {
     clipId: string;
@@ -15,55 +19,66 @@ export type RecomposeItemInfo = {
 type Props = {
     clips: RecomposeItemInfo[];
     currentIndex: number;
+    currentTime?: number;
     onSelectClip: (index: number) => void;
     onReorderClips: (dragIndex: number, dropIndex: number) => void;
+    onDragStartTimeline?: () => void;
+    onScrub?: (index: number, time: number) => void;
     height?: number;
 };
 
 export default function RecomposeTimelineD3({
     clips,
     currentIndex,
+    currentTime = 0,
     onSelectClip,
     onReorderClips,
-    height = 80,
+    onDragStartTimeline,
+    onScrub,
+    height = 90,
 }: Props) {
     const svgRef = useRef<SVGSVGElement | null>(null);
 
+    const layoutClips = useMemo(() => {
+        let x = 0;
+        return clips.map((clip, i) => {
+            const width = Math.max(50, Math.min(250, clip.duration * 5));
+            const info = { ...clip, index: i, x, width };
+            x += width + 4;
+            return info;
+        });
+    }, [clips]);
+
+    const totalWidth = layoutClips.length ? layoutClips[layoutClips.length - 1].x + layoutClips[layoutClips.length - 1].width : 0;
+
+    // Structural Draw (Clips, Scrubber background, Playhead)
     useEffect(() => {
         const svgEl = svgRef.current;
-        if (!svgEl || clips.length === 0) return;
+        if (!svgEl || layoutClips.length === 0) return;
 
-        const width = svgEl.clientWidth || 800; // Will scale automatically mostly
-        const margin = { top: 12, right: 12, bottom: 12, left: 12 };
+        const margin = { top: 12, right: 12, bottom: 24, left: 12 };
         const innerH = height - margin.top - margin.bottom;
+        const clipH = innerH - 14; // Leave room at the bottom for scrub track
 
-        // Give each clip a proportional width (e.g., 5px per sec) mapped to domain
-        const minBlockWidth = 50;
-        const maxBlockWidth = 250;
-        const spacing = 4;
-
-        let totalLength = 0;
-        const layoutClips: any[] = [];
-
-        clips.forEach((clip, i) => {
-            const w = Math.max(minBlockWidth, Math.min(maxBlockWidth, clip.duration * 5));
-            layoutClips.push({ ...clip, index: i, x: totalLength, width: w });
-            totalLength += w + spacing;
-        });
-
-        const totalWidth = margin.left + margin.right + totalLength;
-        
         const svg = d3.select(svgEl);
         svg.selectAll("*").remove();
 
         svg
-            .attr("viewBox", `0 0 ${totalWidth} ${height}`)
-            .style("width", `${totalWidth}px`)
+            .attr("viewBox", `0 0 ${totalWidth + margin.left + margin.right} ${height}`)
+            .style("width", `${totalWidth + margin.left + margin.right}px`)
             .style("height", `${height}px`);
 
         const g = svg
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // Scrub Track background
+        g.append("rect")
+            .attr("y", clipH + 6)
+            .attr("width", totalWidth)
+            .attr("height", 8)
+            .attr("rx", 4)
+            .attr("fill", "#2d2d2d");
 
         // Draw clips
         const groups = g.selectAll("g.recompose-clip")
@@ -77,10 +92,8 @@ export default function RecomposeTimelineD3({
         groups.append("rect")
             .attr("class", "clip-bg")
             .attr("width", d => d.width)
-            .attr("height", innerH)
+            .attr("height", clipH)
             .attr("rx", 6)
-            .attr("fill", d => d.index === currentIndex ? "#A6C7A4" : "#4F7F72")
-            .attr("stroke", d => d.index === currentIndex ? "#7DA87B" : "none")
             .attr("stroke-width", 2)
             .style("cursor", "grab");
 
@@ -88,13 +101,12 @@ export default function RecomposeTimelineD3({
         groups.append("text")
             .text(d => d.title || "Clip")
             .attr("x", 8)
-            .attr("y", innerH / 2 + 4)
+            .attr("y", clipH / 2 + 4)
             .attr("font-size", 12)
             .attr("font-weight", 600)
             .attr("fill", "#fff")
             .style("pointer-events", "none")
             .each(function(d: any) {
-                // simple truncate
                 const self = d3.select(this);
                 let textLength = self.node()?.getComputedTextLength() || 0;
                 let text = self.text();
@@ -107,17 +119,18 @@ export default function RecomposeTimelineD3({
 
         // Click Event to select
         groups.on("click", (evt, d) => {
-            if (evt.defaultPrevented) return; // Ignore click if dragging
+            if (evt.defaultPrevented) return;
             onSelectClip(d.index);
         });
 
-        // Add D3 Drag Behavior
+        // Add D3 Drag Behavior (for reordering)
         let draggedNode: any = null;
         let dragStartX = 0;
 
         const drag = d3.drag<any, any>()
             .on("start", function(event, d) {
-                d3.select(this).raise(); // Bring to front
+                onDragStartTimeline?.(); // pause video when dragging boxes
+                d3.select(this).raise(); 
                 d3.select(this).select(".clip-bg")
                     .style("cursor", "grabbing")
                     .attr("opacity", 0.8);
@@ -125,7 +138,6 @@ export default function RecomposeTimelineD3({
                 dragStartX = d.x;
             })
             .on("drag", function(event, d) {
-                // Move visually
                 dragStartX += event.dx;
                 d3.select(this).attr("transform", `translate(${dragStartX}, 0)`);
                 event.sourceEvent.preventDefault();
@@ -137,10 +149,7 @@ export default function RecomposeTimelineD3({
                     .style("cursor", "grab")
                     .attr("opacity", 1);
                 
-                // Find where we dropped it based on X coordinate
-                // dragStartX represents the center-ish of the clip depending on grab, but mostly left bound.
                 const centerDropX = dragStartX + (d.width / 2);
-                
                 let targetIndex = layoutClips.length - 1;
                 for (let i = 0; i < layoutClips.length; i++) {
                     const lc = layoutClips[i];
@@ -150,12 +159,9 @@ export default function RecomposeTimelineD3({
                     }
                 }
                 
-                // If it moved
                 if (targetIndex !== d.index) {
-                    // Update state to notify React
                     onReorderClips(d.index, targetIndex);
                 } else {
-                    // Snap back
                     d3.select(this)
                         .transition()
                         .duration(200)
@@ -166,7 +172,48 @@ export default function RecomposeTimelineD3({
 
         groups.call(drag);
 
-        // Optional: Hover Tooltip using D3
+        // Playhead Element
+        const playhead = g.append("g").attr("class", "playhead").style("pointer-events", "none");
+        playhead.append("line")
+            .attr("y1", -4)
+            .attr("y2", innerH + 4)
+            .attr("stroke", "#ff4444")
+            .attr("stroke-width", 2);
+        playhead.append("polygon")
+            .attr("points", "-6,-4 6,-4 0,4")
+            .attr("fill", "#ff4444");
+
+        // Scrub Drag (Catch interactions over the timeline track)
+        const scrubDrag = d3.drag<any, any>()
+            .on("start", () => onDragStartTimeline?.())
+            .on("drag", function(event) {
+                let px = Math.max(0, Math.min(totalWidth, event.x));
+                const target = layoutClips.find(c => px >= c.x && px <= c.x + c.width) || layoutClips[layoutClips.length - 1];
+                const progress = clamp((px - target.x) / target.width, 0, 1);
+                const time = target.start + progress * target.duration;
+                onScrub?.(target.index, time);
+            });
+
+        g.append("rect")
+            .attr("class", "scrub-overlay")
+            .attr("y", clipH)
+            .attr("width", totalWidth)
+            .attr("height", margin.bottom + 14)
+            .attr("fill", "transparent")
+            .style("cursor", "crosshair")
+            .call(scrubDrag)
+            .on("click", (event) => {
+                 const [px] = d3.pointer(event, g.node());
+                 let safePx = Math.max(0, Math.min(totalWidth, px));
+                 const target = layoutClips.find(c => safePx >= c.x && safePx <= c.x + c.width) || layoutClips[layoutClips.length - 1];
+                 const progress = clamp((safePx - target.x) / target.width, 0, 1);
+                 const time = target.start + progress * target.duration;
+                 onScrub?.(target.index, time);
+            });
+
+        playhead.raise();
+
+        // Hover Tooltip
         const tooltip = d3.select("body").selectAll(".d3-tooltip").data([0]);
         const ttEnter = tooltip.enter().append("div").attr("class", "d3-tooltip")
             .style("position", "absolute")
@@ -183,7 +230,7 @@ export default function RecomposeTimelineD3({
         const tt = ttEnter.merge(tooltip as any);
 
         groups.on("mouseover", function(event, d) {
-            if (draggedNode) return; // Don't show tooltip while dragging
+            if (draggedNode) return; 
             
             const startStr = d.start.toFixed(2);
             const endStr = d.end == null ? "END" : d.end.toFixed(2);
@@ -207,11 +254,31 @@ export default function RecomposeTimelineD3({
         });
 
         return () => {
-            // Cleanup tooltips on unmount
             tt.style("visibility", "hidden");
         };
 
-    }, [clips, currentIndex, onSelectClip, onReorderClips, height]);
+    }, [layoutClips, height, onSelectClip, onReorderClips, onDragStartTimeline, onScrub, totalWidth]);
+
+    // Dynamic Draw (Colors + Playhead Position at 60fps)
+    useEffect(() => {
+        const svgEl = svgRef.current;
+        if (!svgEl || layoutClips.length === 0) return;
+        const svg = d3.select(svgEl);
+
+        svg.selectAll(".recompose-clip")
+           .select(".clip-bg")
+           .attr("fill", (d: any) => d.index === currentIndex ? "#A6C7A4" : "#4F7F72")
+           .attr("stroke", (d: any) => d.index === currentIndex ? "#7DA87B" : "none");
+
+        const obj = layoutClips[currentIndex];
+        if (obj) {
+            const ctClamped = Math.max(obj.start, Math.min(obj.end ?? (obj.start + obj.duration), currentTime));
+            const progress = obj.duration ? (ctClamped - obj.start) / obj.duration : 0;
+            let px = obj.x + progress * obj.width;
+            px = Math.max(0, Math.min(totalWidth, px));
+            svg.select(".playhead").attr("transform", `translate(${px}, 0)`);
+        }
+    }, [currentIndex, currentTime, layoutClips, totalWidth]);
 
     return (
         <div style={{ width: "100%", height: "100%", overflowX: "auto", overflowY: "hidden" }}>

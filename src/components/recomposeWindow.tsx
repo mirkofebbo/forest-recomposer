@@ -39,6 +39,7 @@ export default function RecomposeWindow({
     const currentClip = current?.clip;
     const currentClipId = current?.clipId ?? null;
 
+    const ignoreNextSeekRef = useRef(false);
     const autoAdvanceRef = useRef<string | null>(null);
 
     const [player, setPlayer] = useState<any | null>(null);
@@ -55,6 +56,12 @@ export default function RecomposeWindow({
     useEffect(() => {
         autoAdvanceRef.current = null;
         if (!player || !currentClip?.videoId) return;
+
+        if (ignoreNextSeekRef.current) {
+            ignoreNextSeekRef.current = false;
+            return;
+        }
+
         const start = Number(currentClip.start ?? 0);
         const handle = window.setTimeout(() => {
             try {
@@ -63,7 +70,7 @@ export default function RecomposeWindow({
             } catch { }
         }, 200);
         return () => window.clearTimeout(handle);
-    }, [player, currentClip?.videoId, currentClip?.start]);
+    }, [player, currentClip?.clipId]);
 
     useEffect(() => {
         if (!player) return;
@@ -183,7 +190,7 @@ export default function RecomposeWindow({
             </Box>
 
             {/* Clip list area */}
-            <Box sx={{ mt: 2, flex: 1, minHeight: 0, p: 2, borderRadius: 1, border: mode === "DEBUG" ? "3px solid orange" : "none" }}>
+            <Box sx={{ mt: 2, flex: 1, minHeight: 0, p: 2, borderRadius: 1, mb: 1, border: mode === "DEBUG" ? "3px solid orange" : "none" }}>
                 {keyedClips.length === 0 ? (
                     <Box sx={{ opacity: 0.7 }}>No clips to recompose yet.</Box>
                 ) : (
@@ -199,9 +206,26 @@ export default function RecomposeWindow({
                             duration: Math.max(0.5, (k.clip.end ?? ((k.clip.start ?? 0) + 10)) - (k.clip.start ?? 0))
                         }))}
                         currentIndex={currentIndex}
-                        onSelectClip={setCurrentIndex}
+                        currentTime={currentTime}
+                        onSelectClip={(idx) => {
+                            if (idx === currentIndex) {
+                                // Already selected! Restart the video at clip.start.
+                                player?.seekTo?.(keyedClips[idx].clip.start ?? 0, true);
+                                player?.playVideo?.();
+                            } else {
+                                setCurrentIndex(idx);
+                            }
+                        }}
                         onReorderClips={reorderClips}
-                        height={80}
+                        onDragStartTimeline={() => player?.pauseVideo?.()}
+                        onScrub={(index, time) => {
+                            if (index !== currentIndex) {
+                                ignoreNextSeekRef.current = true;
+                                setCurrentIndex(index);
+                            }
+                            player?.seekTo?.(time, true);
+                        }}
+                        height={100}
                     />
                 )}
             </Box>
