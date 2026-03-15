@@ -25,10 +25,23 @@ export type Clip = {
   note?: string;
 };
 
+export type RecomposeItem = {
+  videoId: string;
+  clipId: string;
+  title: string;
+  channelTitle: string;
+  publishedAt: string;
+  thumbnailUrl: string;
+  start: number;
+  end: number | null;
+  tags?: string[];
+  note?: string;
+};
 export type Manifest = {
   to_edit: Array<VideoItem>;
   in_progress: Array<VideoItem>;
   completed: Array<VideoItem>;
+  recompose?: Array<RecomposeItem>;
 };
 
 export type TagList = 

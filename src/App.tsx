@@ -6,9 +6,10 @@ import VideoSearch from "./components/videoSearchWindow";
 import CompletedListWindow from "./components/completedListWindow";
 import EditWindow from "./components/editWindow";
 import VideoPlayerModal from "./components/modal/videoPlayerModal";
+import RecomposeWindow from "./components/recomposeWindow";
 
 import manifest from "../public/manifest.json";
-import type { Manifest } from "./types";
+import type { Manifest, RecomposeItem } from "./types";
 
 const MODE: string = "";
 const LEFT_PANE_WIDTH = "20%";
@@ -17,6 +18,8 @@ const RIGHT_PANE_WIDTH = "20%";
 
 export default function App() {
   const [manifestData, setManifestData] = useState<Manifest>(manifest as Manifest);
+  const [isRecomposing, setIsRecomposing] = useState(false);
+
   const [videoModal, setVideoModal] = useState<{
     open: boolean;
     videoId?: string;
@@ -25,26 +28,11 @@ export default function App() {
     autoPlay?: boolean;
   }>({ open: false });
 
-  const [selectedClips, setSelectedClips] = useState<
-    { videoId: string; clipId: string; start: number; end: number | null; tags?: string[]; note?: string }[]
-  >([]);
-
   const openVideo = (videoId: string, start?: number, end?: number | null) =>
     setVideoModal({ open: true, videoId, start, end, autoPlay: true, loop: false, muted: false });
 
   const closeVideo = () =>
     setVideoModal({ open: false, videoId: undefined, start: undefined, end: undefined, autoPlay: false });
-
-  const addSelectedClip = (payload: any) => {
-    setSelectedClips((prev) => {
-      const exists = prev.some((p) => p.videoId === payload.videoId && p.clipId === payload.clipId);
-      return exists ? prev : [payload, ...prev];
-    });
-  };
-
-  const removeSelectedClip = (videoId: string, clipId: string) => {
-    setSelectedClips((prev) => prev.filter((p) => !(p.videoId === videoId && p.clipId === clipId)));
-  };
 
   const deleteCompletedClip = (videoId: string, clipId: string) => {
     setManifestData((prev) => {
@@ -54,20 +42,59 @@ export default function App() {
       });
       return { ...prev, completed };
     });
-
-    removeSelectedClip(videoId, clipId);
   };
 
   useEffect(() => {
     console.log("Manifest data updated:", manifestData);
   }, [manifestData]);
 
+  // Sync completion clips over to recompose state automatically
+  useEffect(() => {
+    setManifestData((prev) => {
+      let changed = false;
+      const currentRecompose = prev.recompose ?? [];
+      
+      // We will create a fresh combined list of recompose items based on the ones from completed
+      const allCompletedClips: RecomposeItem[] = (prev.completed ?? []).flatMap((v) => 
+        (v.clips ?? []).map((clip) => ({
+          videoId: v.videoId || "",
+          clipId: clip.id,
+          title: v.title ?? "",
+          channelTitle: v.channelTitle ?? "",
+          publishedAt: v.publishedAt ?? "",
+          thumbnailUrl: v.thumbnailUrl ?? "",
+          start: clip.start,
+          end: clip.end ?? null,
+          tags: clip.tags,
+          note: clip.note,
+        }))
+      );
+
+      // Simple implementation: Just merge anything missing
+      // Realistically we want to keep currentRecompose's order if they already exist
+      const existingClipIds = new Set(currentRecompose.map(p => p.clipId));
+      const newItems = allCompletedClips.filter(c => !existingClipIds.has(c.clipId));
+
+      // Or maybe remove ones that are deleted from completed List?
+      const completedClipIds = new Set(allCompletedClips.map(c => c.clipId));
+      const validRecompose = currentRecompose.filter(c => completedClipIds.has(c.clipId));
+      
+      if (newItems.length > 0 || validRecompose.length !== currentRecompose.length) {
+        return {
+          ...prev,
+          recompose: [...validRecompose, ...newItems]
+        };
+      }
+      return prev;
+    });
+  }, [manifestData?.completed]);
+
   const resumeEdit = (videoId: string) => {
     setManifestData(prev => {
       const completed = prev.completed ?? [];
       const found = completed.find(v => v.videoId === videoId);
       if (!found) return prev;
-
+      setIsRecomposing(false);
       return {
         ...prev,
         completed: completed.filter(v => v.videoId !== videoId),
@@ -78,6 +105,10 @@ export default function App() {
       };
     });
   };
+
+  const onRecompose = () => {
+    setIsRecomposing(true);
+  }
   return (
     <>
       <Box sx={{ display: "flex", flexDirection: "row", height: "100vh", width: "100vw" }}>
@@ -90,7 +121,11 @@ export default function App() {
             <VideoSearch mode={MODE} manifestData={manifestData} setManifestData={setManifestData} onOpenVideoModal={openVideo} />
           </Box>
           <Box sx={{ height: "100%", backgroundColor: "primary.dark", margin: 1, borderRadius: 2 }}>
-            <EditWindow mode={MODE} manifestData={manifestData} setManifestData={setManifestData} />
+            {isRecomposing ? (
+              <RecomposeWindow mode={MODE} manifestData={manifestData} setManifestData={setManifestData} />
+            ) : (
+              <EditWindow mode={MODE} manifestData={manifestData} setManifestData={setManifestData} />
+            )}
           </Box>
 
         </Box>
@@ -103,9 +138,7 @@ export default function App() {
             onOpenVideoModal={openVideo}
             onResumeEdit={resumeEdit}
             onDeleteClip={deleteCompletedClip}
-            onSelectClip={(videoId, clip) =>
-              addSelectedClip({ videoId, clipId: clip.id, start: clip.start, end: clip.end ?? null, tags: clip.tags, note: clip.note })
-            }
+            onRecompose={onRecompose}
           />
         </Box>
       </Box>
