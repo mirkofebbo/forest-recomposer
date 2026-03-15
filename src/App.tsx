@@ -6,6 +6,7 @@ import VideoSearch from "./components/videoSearchWindow";
 import CompletedListWindow from "./components/completedListWindow";
 import EditWindow from "./components/editWindow";
 import VideoPlayerModal from "./components/modal/videoPlayerModal";
+import RecomposeWindow from "./components/recomposeWindow";
 
 import manifest from "../public/manifest.json";
 import type { Manifest, RecomposeItem } from "./types";
@@ -17,6 +18,8 @@ const RIGHT_PANE_WIDTH = "20%";
 
 export default function App() {
   const [manifestData, setManifestData] = useState<Manifest>(manifest as Manifest);
+  const [isRecomposing, setIsRecomposing] = useState(false);
+
   const [videoModal, setVideoModal] = useState<{
     open: boolean;
     videoId?: string;
@@ -28,6 +31,7 @@ export default function App() {
   const [selectedClips, setSelectedClips] = useState<
     { videoId: string; clipId: string; start: number; end: number | null; tags?: string[]; note?: string }[]
   >([]);
+
 
   const openVideo = (videoId: string, start?: number, end?: number | null) =>
     setVideoModal({ open: true, videoId, start, end, autoPlay: true, loop: false, muted: false });
@@ -100,7 +104,7 @@ export default function App() {
       const completed = prev.completed ?? [];
       const found = completed.find(v => v.videoId === videoId);
       if (!found) return prev;
-
+      setIsRecomposing(false);
       return {
         ...prev,
         completed: completed.filter(v => v.videoId !== videoId),
@@ -111,6 +115,10 @@ export default function App() {
       };
     });
   };
+
+  const onRecompose = () => {
+    setIsRecomposing(true);
+  }
   return (
     <>
       <Box sx={{ display: "flex", flexDirection: "row", height: "100vh", width: "100vw" }}>
@@ -123,7 +131,11 @@ export default function App() {
             <VideoSearch mode={MODE} manifestData={manifestData} setManifestData={setManifestData} onOpenVideoModal={openVideo} />
           </Box>
           <Box sx={{ height: "100%", backgroundColor: "primary.dark", margin: 1, borderRadius: 2 }}>
-            <EditWindow mode={MODE} manifestData={manifestData} setManifestData={setManifestData} />
+            {isRecomposing ? (
+              <RecomposeWindow mode={MODE} manifestData={manifestData} setManifestData={setManifestData} />
+            ) : (
+              <EditWindow mode={MODE} manifestData={manifestData} setManifestData={setManifestData} />
+            )}
           </Box>
 
         </Box>
@@ -139,6 +151,7 @@ export default function App() {
             onSelectClip={(videoId, clip) =>
               addSelectedClip({ videoId, clipId: clip.id, start: clip.start, end: clip.end ?? null, tags: clip.tags, note: clip.note })
             }
+            onRecompose={onRecompose}
           />
         </Box>
       </Box>

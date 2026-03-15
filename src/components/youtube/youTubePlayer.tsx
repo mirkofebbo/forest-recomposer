@@ -7,7 +7,7 @@ type Props = {
 };
 
 export default function YouTubePlayer({ videoId, onPlayerReady }: Props) {
-    const containerIdRef = useRef(`yt-${Math.random().toString(16).slice(2)}`);
+    const containerRef = useRef<HTMLDivElement>(null);
     const playerRef = useRef<any>(null);
 
     useEffect(() => {
@@ -16,8 +16,14 @@ export default function YouTubePlayer({ videoId, onPlayerReady }: Props) {
         (async () => {
             const YT = await loadYouTubeIframeAPI();
             if (!mounted) return;
+            if (!containerRef.current) return;
 
-            playerRef.current = new YT.Player(containerIdRef.current, {
+            // Create a disposable element for the YouTube API to safely replace
+            // without confusing React's unmount tree.
+            const ytNode = document.createElement("div");
+            containerRef.current.appendChild(ytNode);
+
+            playerRef.current = new YT.Player(ytNode, {
                 width: "100%",
                 height: "100%",
                 videoId: videoId || undefined,
@@ -46,5 +52,5 @@ export default function YouTubePlayer({ videoId, onPlayerReady }: Props) {
         playerRef.current.loadVideoById({ videoId });
     }, [videoId]);
 
-    return <div id={containerIdRef.current} style={{ width: "100%", height: "100%" }} />;
+    return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
 }

@@ -19,6 +19,7 @@ export default function CompletedListWindow({
     onResumeEdit,
     onDeleteClip,
     onSelectClip,
+    onRecompose,
 }: {
     mode?: string;
     manifestData?: Manifest;
@@ -27,6 +28,7 @@ export default function CompletedListWindow({
     onResumeEdit: (videoId: string) => void;
     onDeleteClip: (videoId: string, clipId: string) => void;
     onSelectClip: (videoId: string, clip: Clip) => void;
+    onRecompose: () => void;
 }) {
     const completed = manifestData?.completed ?? [];
 
@@ -172,7 +174,7 @@ export default function CompletedListWindow({
                     </Box>
                 </Box>
             )}
-            <Button variant="contained" disabled={sorted.length === 0} sx={{ mt: "auto" }}>
+            <Button variant="contained" disabled={sorted.length === 0} sx={{ mt: "auto" }} onClick={onRecompose}>
                 Ready to recompose? 
             </Button>
         </Container>
