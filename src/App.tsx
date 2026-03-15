@@ -28,60 +28,11 @@ export default function App() {
     autoPlay?: boolean;
   }>({ open: false });
 
-  const [selectedClips, setSelectedClips] = useState<
-    { videoId: string; clipId: string; start: number; end: number | null; tags?: string[]; note?: string }[]
-  >([]);
-
-
   const openVideo = (videoId: string, start?: number, end?: number | null) =>
     setVideoModal({ open: true, videoId, start, end, autoPlay: true, loop: false, muted: false });
 
   const closeVideo = () =>
     setVideoModal({ open: false, videoId: undefined, start: undefined, end: undefined, autoPlay: false });
-
-  const addSelectedClip = (payload: {
-    videoId: string;
-    clipId: string;
-    start: number;
-    end: number | null;
-    tags?: string[];
-    note?: string;
-  }) => {
-    setSelectedClips((prev) => {
-      const exists = prev.some((p) => p.videoId === payload.videoId && p.clipId === payload.clipId);
-      return exists ? prev : [payload, ...prev];
-    });
-
-    setManifestData((prev) => {
-      const recompose = prev.recompose ?? [];
-      const exists = recompose.some((p) => p.videoId === payload.videoId && p.clipId === payload.clipId);
-      if (exists) return prev;
-
-      const sourceVideo =
-        (prev.completed ?? []).find((v) => v.videoId === payload.videoId) ??
-        (prev.in_progress ?? []).find((v) => v.videoId === payload.videoId) ??
-        (prev.to_edit ?? []).find((v) => v.videoId === payload.videoId);
-
-      const newItem: RecomposeItem = {
-        videoId: payload.videoId,
-        clipId: payload.clipId,
-        title: sourceVideo?.title ?? "",
-        channelTitle: sourceVideo?.channelTitle ?? "",
-        publishedAt: sourceVideo?.publishedAt ?? "",
-        thumbnailUrl: sourceVideo?.thumbnailUrl ?? "",
-        start: payload.start,
-        end: payload.end ?? null,
-        tags: payload.tags,
-        note: payload.note,
-      };
-
-      return { ...prev, recompose: [newItem, ...recompose] };
-    });
-  };
-
-  const removeSelectedClip = (videoId: string, clipId: string) => {
-    setSelectedClips((prev) => prev.filter((p) => !(p.videoId === videoId && p.clipId === clipId)));
-  };
 
   const deleteCompletedClip = (videoId: string, clipId: string) => {
     setManifestData((prev) => {
@@ -91,13 +42,52 @@ export default function App() {
       });
       return { ...prev, completed };
     });
-
-    removeSelectedClip(videoId, clipId);
   };
 
   useEffect(() => {
     console.log("Manifest data updated:", manifestData);
   }, [manifestData]);
+
+  // Sync completion clips over to recompose state automatically
+  useEffect(() => {
+    setManifestData((prev) => {
+      let changed = false;
+      const currentRecompose = prev.recompose ?? [];
+      
+      // We will create a fresh combined list of recompose items based on the ones from completed
+      const allCompletedClips: RecomposeItem[] = (prev.completed ?? []).flatMap((v) => 
+        (v.clips ?? []).map((clip) => ({
+          videoId: v.videoId || "",
+          clipId: clip.id,
+          title: v.title ?? "",
+          channelTitle: v.channelTitle ?? "",
+          publishedAt: v.publishedAt ?? "",
+          thumbnailUrl: v.thumbnailUrl ?? "",
+          start: clip.start,
+          end: clip.end ?? null,
+          tags: clip.tags,
+          note: clip.note,
+        }))
+      );
+
+      // Simple implementation: Just merge anything missing
+      // Realistically we want to keep currentRecompose's order if they already exist
+      const existingClipIds = new Set(currentRecompose.map(p => p.clipId));
+      const newItems = allCompletedClips.filter(c => !existingClipIds.has(c.clipId));
+
+      // Or maybe remove ones that are deleted from completed List?
+      const completedClipIds = new Set(allCompletedClips.map(c => c.clipId));
+      const validRecompose = currentRecompose.filter(c => completedClipIds.has(c.clipId));
+      
+      if (newItems.length > 0 || validRecompose.length !== currentRecompose.length) {
+        return {
+          ...prev,
+          recompose: [...validRecompose, ...newItems]
+        };
+      }
+      return prev;
+    });
+  }, [manifestData?.completed]);
 
   const resumeEdit = (videoId: string) => {
     setManifestData(prev => {
@@ -148,9 +138,6 @@ export default function App() {
             onOpenVideoModal={openVideo}
             onResumeEdit={resumeEdit}
             onDeleteClip={deleteCompletedClip}
-            onSelectClip={(videoId, clip) =>
-              addSelectedClip({ videoId, clipId: clip.id, start: clip.start, end: clip.end ?? null, tags: clip.tags, note: clip.note })
-            }
             onRecompose={onRecompose}
           />
         </Box>

@@ -18,7 +18,6 @@ export default function CompletedListWindow({
     onOpenVideoModal,
     onResumeEdit,
     onDeleteClip,
-    onSelectClip,
     onRecompose,
 }: {
     mode?: string;
@@ -27,7 +26,6 @@ export default function CompletedListWindow({
     onOpenVideoModal: (videoId: string, start?: number, end?: number | null) => void;
     onResumeEdit: (videoId: string) => void;
     onDeleteClip: (videoId: string, clipId: string) => void;
-    onSelectClip: (videoId: string, clip: Clip) => void;
     onRecompose: () => void;
 }) {
     const completed = manifestData?.completed ?? [];
@@ -124,20 +122,6 @@ export default function CompletedListWindow({
                                             >
                                                 {/* top-right controls */}
                                                 <Box sx={{ position: "absolute", top: 2, right: 2, display: "flex", gap: 0.25 }}>
-                                                    {/* + select */}
-                                                    <Tooltip title="Select for next part">
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                onSelectClip(vid, clip);
-                                                            }}
-                                                            sx={{ "&:hover": { boxShadow: 2, backgroundColor: "success.light" }, }}
-                                                        >
-                                                            <AddIcon fontSize="inherit" />
-                                                        </IconButton>
-                                                    </Tooltip>
-
                                                     {/*delete */}
                                                     <Tooltip title="Delete clip">
                                                         <IconButton
