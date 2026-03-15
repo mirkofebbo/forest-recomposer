@@ -160,15 +160,9 @@ export default function RecomposeWindow({
                 return { ...prev, recompose: newClips };
             });
             
-            setTimeout(() => {
-                if (currentIndex === dragIndex) {
-                    setCurrentIndex(targetIndex);
-                } else if (currentIndex > dragIndex && currentIndex <= targetIndex) {
-                    setCurrentIndex(prev => prev - 1);
-                } else if (currentIndex < dragIndex && currentIndex >= targetIndex) {
-                    setCurrentIndex(prev => prev + 1);
-                }
-            }, 0);
+            // By NOT updating currentIndex here, the slider slot index remains visually the same.
+            // If the user drops a different video into the current slot, the player 
+            // will detect the clipId change in its deps and automatically load & play the new video!
         }
     };
 

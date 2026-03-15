@@ -97,9 +97,9 @@ export default function RecomposeTimelineD3({
             .attr("stroke-width", 2)
             .style("cursor", "grab");
 
-        // Title text
+        // Title text (now shows tags)
         groups.append("text")
-            .text(d => d.title || "Clip")
+            .text(d => (d.tags && d.tags.length > 0) ? d.tags.join(", ") : (d.title || "Clip"))
             .attr("x", 8)
             .attr("y", clipH / 2 + 4)
             .attr("font-size", 12)
@@ -185,8 +185,16 @@ export default function RecomposeTimelineD3({
 
         // Scrub Drag (Catch interactions over the timeline track)
         const scrubDrag = d3.drag<any, any>()
-            .on("start", () => onDragStartTimeline?.())
+            .on("start", () => {
+                if (svg.node()) (svg.node() as any).dataset.isScrubbing = "true";
+                onDragStartTimeline?.();
+            })
             .on("drag", function(event) {
+                let px = Math.max(0, Math.min(totalWidth, event.x));
+                svg.select(".playhead").attr("transform", `translate(${px}, 0)`);
+            })
+            .on("end", function(event) {
+                if (svg.node()) (svg.node() as any).dataset.isScrubbing = "false";
                 let px = Math.max(0, Math.min(totalWidth, event.x));
                 const target = layoutClips.find(c => px >= c.x && px <= c.x + c.width) || layoutClips[layoutClips.length - 1];
                 const progress = clamp((px - target.x) / target.width, 0, 1);
@@ -269,6 +277,9 @@ export default function RecomposeTimelineD3({
            .select(".clip-bg")
            .attr("fill", (d: any) => d.index === currentIndex ? "#A6C7A4" : "#4F7F72")
            .attr("stroke", (d: any) => d.index === currentIndex ? "#7DA87B" : "none");
+
+        // Do not update playhead from the player's current time if the user is dragging the scrubber!
+        if (svg.node()?.dataset.isScrubbing === "true") return;
 
         const obj = layoutClips[currentIndex];
         if (obj) {
