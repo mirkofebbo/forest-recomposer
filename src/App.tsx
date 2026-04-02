@@ -17,7 +17,17 @@ const CENTER_PANE_WIDTH = "60%";
 const RIGHT_PANE_WIDTH = "20%";
 
 export default function App() {
-  const [manifestData, setManifestData] = useState<Manifest>(manifest as Manifest);
+  const [manifestData, setManifestData] = useState<Manifest>(() => {
+    const saved = localStorage.getItem("manifestData");
+    if (saved) {
+      try {
+        return JSON.parse(saved) as Manifest;
+      } catch (e) {
+        console.error("Failed to parse manifestData from localStorage", e);
+      }
+    }
+    return manifest as Manifest;
+  });
   const [isRecomposing, setIsRecomposing] = useState(false);
 
   const [videoModal, setVideoModal] = useState<{
@@ -45,6 +55,7 @@ export default function App() {
   };
 
   useEffect(() => {
+    localStorage.setItem("manifestData", JSON.stringify(manifestData));
     console.log("Manifest data updated:", manifestData);
   }, [manifestData]);
 
