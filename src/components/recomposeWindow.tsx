@@ -111,35 +111,35 @@ export default function RecomposeWindow({
         setDuration(0);
     }, [currentClip?.videoId]);
 
-    const removeRecomposeClip = (clipId: string, videoId?: string) => {
-        if (!setManifestData) return;
+    // const removeRecomposeClip = (clipId: string, videoId?: string) => {
+    //     if (!setManifestData) return;
 
-        setManifestData((prev) => {
-            const raw = prev.recompose ?? [];
-            const normalized = (Array.isArray(raw) && (raw as any)[0]?.clips)
-                ? (raw as any[]).flatMap((group) => group?.clips ?? [])
-                : raw;
-            const filtered = (normalized as any[]).filter((c, index) => {
-                const id = c?.clipId ?? c?.id ?? `${c?.videoId ?? "vid"}-${index}`;
-                if (videoId && c?.videoId !== videoId) return true;
-                return id !== clipId;
-            });
-            return { ...prev, recompose: filtered as RecomposeItem[] };
-        });
-    };
+    //     setManifestData((prev) => {
+    //         const raw = prev.recompose ?? [];
+    //         const normalized = (Array.isArray(raw) && (raw as any)[0]?.clips)
+    //             ? (raw as any[]).flatMap((group) => group?.clips ?? [])
+    //             : raw;
+    //         const filtered = (normalized as any[]).filter((c, index) => {
+    //             const id = c?.clipId ?? c?.id ?? `${c?.videoId ?? "vid"}-${index}`;
+    //             if (videoId && c?.videoId !== videoId) return true;
+    //             return id !== clipId;
+    //         });
+    //         return { ...prev, recompose: filtered as RecomposeItem[] };
+    //     });
+    // };
 
-    const savedClips: Clip[] = useMemo(() => {
-        if (!currentClip?.videoId) return [];
-        return keyedClips
-            .filter((c) => c.clip?.videoId === currentClip.videoId)
-            .map((c) => ({
-                id: c.clipId,
-                start: c.clip.start,
-                end: c.clip.end ?? null,
-                tags: c.clip.tags,
-                note: c.clip.note,
-            }));
-    }, [currentClip?.videoId, keyedClips]);
+    // const savedClips: Clip[] = useMemo(() => {
+    //     if (!currentClip?.videoId) return [];
+    //     return keyedClips
+    //         .filter((c) => c.clip?.videoId === currentClip.videoId)
+    //         .map((c) => ({
+    //             id: c.clipId,
+    //             start: c.clip.start,
+    //             end: c.clip.end ?? null,
+    //             tags: c.clip.tags,
+    //             note: c.clip.note,
+    //         }));
+    // }, [currentClip?.videoId, keyedClips]);
 
     const reorderClips = (dragIndex: number, targetIndex: number) => {
         if (dragIndex === targetIndex) return;
