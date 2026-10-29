@@ -29,6 +29,7 @@ Edited videos with timecodes recomposition
 - [Overview](#overview)
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [YouTube Search API Key](#youtube-search-api-key)
 - [Execution / Usage](#execution--usage)
 - [Features](#features)
 - [Contributing](#contributing)
@@ -82,6 +83,22 @@ git clone git@github.com:mirkofebbo/forest-recomposer.git
 cd forest-recomposer
 npm install
 ```
+
+## YouTube Search API Key
+
+YouTube search requires a Google API key:
+
+1. Open the [Google Cloud Console](https://console.cloud.google.com/), create or select a project, and enable the **YouTube Data API v3** in the [API Library](https://console.cloud.google.com/apis/library/youtube.googleapis.com).
+2. Open [Credentials](https://console.cloud.google.com/apis/credentials) and create an API key.
+3. In the key settings, restrict the key to the **YouTube Data API v3**. When deployed, also set an application restriction for your site's referrers.
+4. In the project root, create a `.env.local` file and add:
+
+   ```dotenv
+   VITE_YT_API_KEY=your_api_key
+   ```
+
+Restart the development server after adding or changing the key. Vite exposes `VITE_` variables in the browser, so this key is visible to users; restrict it and monitor its API quota.
+
 ## Execution / Usage
 
 To run **Forest Video Recomposer**, fire up a terminal window and run the following command:
@@ -113,21 +130,19 @@ To contribute to the development of **Forest Video Recomposer**, follow the step
 5. Push to the branch (`git push origin feature-new`)
 6. Create a new pull request
 
-## Contributors
-
-Here's the list of people who have contributed to **Forest Video Recomposer**:
-
-- Jane Doe – [@JaneDoeTwitter](https://twitter.com/< username >) – jane@example.com
-
 ## Author
 
 Mirko Febbo – [@mirko.febbo](https://www.instagram.com/mirko.febbo/?hl=en) – M.Febbo@gold.ac.uk
 
 ## Change log
 
+- Unreleased
+    - Added timeline-based video editing with timecodes, tags, and notes.
+    - Added a recomposition view for saved clips, including video thumbnails.
 
 - 0.0.1
     - First Commit
+    
 
 ## License
 
