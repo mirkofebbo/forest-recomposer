@@ -19,7 +19,6 @@ export default function YouTubePlayer({ videoId, onPlayerReady }: Props) {
             if (!containerRef.current) return;
 
             // Create a disposable element for the YouTube API to safely replace
-            // without confusing React's unmount tree.
             const ytNode = document.createElement("div");
             containerRef.current.appendChild(ytNode);
 
