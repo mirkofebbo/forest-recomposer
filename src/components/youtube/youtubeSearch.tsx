@@ -9,7 +9,21 @@ function getApiKey(): string {
   const stored = sessionStorage.getItem(SESSION_KEY);
   if (stored) return stored;
 
-  const entered = window.prompt("Enter your YouTube API key (kept for this session only):")?.trim();
+  const entered = window
+    .prompt(
+      [
+        "A YouTube Data API key is needed to search videos.",
+        "",
+        "How to get a free one:",
+        "1. Go to https://console.cloud.google.com/ and create a project.",
+        "2. Open https://console.cloud.google.com/apis/library/youtube.googleapis.com and click Enable (YouTube Data API v3).",
+        "3. Go to https://console.cloud.google.com/apis/credentials > Create credentials > API key.",
+        "4. Copy the key and paste it below.",
+        "",
+        "The key is kept for this browser session only and never saved.",
+      ].join("\n"),
+    )
+    ?.trim();
   if (!entered) throw new Error("A YouTube API key is required to search.");
   sessionStorage.setItem(SESSION_KEY, entered);
   return entered;
