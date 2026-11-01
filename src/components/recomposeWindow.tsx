@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Container, Box } from "@mui/material";
 import type { Dispatch, SetStateAction } from "react";
-import type { Manifest, Clip, RecomposeItem } from "../types";
+import type { Manifest, RecomposeItem } from "../types";
 import YouTubePlayer from "./youtube/youTubePlayer";
 import RecomposeTimelineD3 from "../components/recomposeTimelineD3";
 

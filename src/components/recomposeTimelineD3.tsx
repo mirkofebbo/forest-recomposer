@@ -128,7 +128,7 @@ export default function RecomposeTimelineD3({
         let dragStartX = 0;
 
         const drag = d3.drag<any, any>()
-            .on("start", function(event, d) {
+            .on("start", function(_event, d) {
                 onDragStartTimeline?.(); // pause video when dragging boxes
                 d3.select(this).raise(); 
                 d3.select(this).select(".clip-bg")
@@ -137,7 +137,7 @@ export default function RecomposeTimelineD3({
                 draggedNode = this;
                 dragStartX = d.x;
             })
-            .on("drag", function(event, d) {
+            .on("drag", function(event, _d) {
                 dragStartX += event.dx;
                 d3.select(this).attr("transform", `translate(${dragStartX}, 0)`);
                 event.sourceEvent.preventDefault();
@@ -237,7 +237,7 @@ export default function RecomposeTimelineD3({
         
         const tt = ttEnter.merge(tooltip as any);
 
-        groups.on("mouseover", function(event, d) {
+        groups.on("mouseover", function(_event, d) {
             if (draggedNode) return; 
             
             const startStr = d.start.toFixed(2);

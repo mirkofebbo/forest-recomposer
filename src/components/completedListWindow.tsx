@@ -1,10 +1,9 @@
 import { useMemo } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { Container, Typography, Box, Card, CardMedia, Chip, IconButton, Tooltip, Button } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import type { Manifest, Clip } from "../types";
+import type { Manifest } from "../types";
 
 
 function ytThumb(videoId: string) {
@@ -14,7 +13,6 @@ function ytThumb(videoId: string) {
 export default function CompletedListWindow({
     mode,
     manifestData,
-    setManifestData,
     onOpenVideoModal,
     onResumeEdit,
     onDeleteClip,

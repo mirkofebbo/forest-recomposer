@@ -26,7 +26,7 @@ export default function App() {
         console.error("Failed to parse manifestData from localStorage", e);
       }
     }
-    return manifest as Manifest;
+    return manifest as unknown as Manifest;
   });
   const [isRecomposing, setIsRecomposing] = useState(false);
 
@@ -39,7 +39,7 @@ export default function App() {
   }>({ open: false });
 
   const openVideo = (videoId: string, start?: number, end?: number | null) =>
-    setVideoModal({ open: true, videoId, start, end, autoPlay: true, loop: false, muted: false });
+    setVideoModal({ open: true, videoId, start, end, autoPlay: true });
 
   const closeVideo = () =>
     setVideoModal({ open: false, videoId: undefined, start: undefined, end: undefined, autoPlay: false });
@@ -62,7 +62,6 @@ export default function App() {
   // Sync completion clips over to recompose state automatically
   useEffect(() => {
     setManifestData((prev) => {
-      let changed = false;
       const currentRecompose = prev.recompose ?? [];
       
       // We will create a fresh combined list of recompose items based on the ones from completed
