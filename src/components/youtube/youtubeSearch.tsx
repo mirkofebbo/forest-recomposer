@@ -1,8 +1,22 @@
 import type { YouTubeSearchItem } from "../../types";
 
+const SESSION_KEY = "yt_api_key";
+
+function getApiKey(): string {
+  const envKey = import.meta.env.VITE_YT_API_KEY as string | undefined;
+  if (envKey) return envKey;
+
+  const stored = sessionStorage.getItem(SESSION_KEY);
+  if (stored) return stored;
+
+  const entered = window.prompt("Enter your YouTube API key (kept for this session only):")?.trim();
+  if (!entered) throw new Error("A YouTube API key is required to search.");
+  sessionStorage.setItem(SESSION_KEY, entered);
+  return entered;
+}
+
 export async function searchYouTubeVideos(q: string) {
-  const key = import.meta.env.VITE_YT_API_KEY as string | undefined;
-  if (!key) throw new Error("Missing VITE_YT_API_KEY in .env.local");
+  const key = getApiKey();
 
   const params = new URLSearchParams({
     part: "snippet",
@@ -16,6 +30,8 @@ export async function searchYouTubeVideos(q: string) {
   const res = await fetch(url);
 
   if (!res.ok) {
+    // Drop a bad session key so the user is asked again next time.
+    if (res.status === 400 || res.status === 403) sessionStorage.removeItem(SESSION_KEY);
     const text = await res.text();
     throw new Error(`YouTube API error ${res.status}: ${text}`);
   }
